@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  ediba-inter:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./logs:/var/log/nginx
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Service de monitoring (optionnel)
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.10.0
+    ports:
+      - "9113:9113"
+    command:
+      - '-nginx.scrape-uri=http://ediba-inter:80/nginx_status'
+    depends_on:
+      - ediba-inter
+    restart: unless-stopped
+
+networks:
+  default:
+    name: ediba-network

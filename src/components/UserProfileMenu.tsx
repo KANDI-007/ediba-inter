@@ -1,0 +1,204 @@
+import React, { useState } from 'react';
+import { 
+  User, 
+  Settings, 
+  LogOut, 
+  ChevronDown, 
+  Bell, 
+  Shield,
+  Mail,
+  Phone,
+  MapPin
+} from 'lucide-react';
+import UserProfileAvatar from './UserProfileAvatar';
+import UserProfileModal from './UserProfileModal';
+
+interface UserProfileMenuProps {
+  user: {
+    id: string;
+    username: string;
+    fullName: string;
+    email: string;
+    role: string;
+    avatar?: string;
+    profileImage?: string;
+    phone?: string;
+    address?: string;
+    joinDate?: string;
+    lastLogin?: string;
+  };
+  onLogout?: () => void;
+  onUpdateProfile?: (updatedUser: any) => void;
+  className?: string;
+}
+
+const UserProfileMenu: React.FC<UserProfileMenuProps> = ({
+  user,
+  onLogout,
+  onUpdateProfile,
+  className = ''
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  const getRoleText = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Administrateur';
+      case 'comptable':
+        return 'Comptable';
+      case 'commercial':
+        return 'Commercial';
+      case 'lecture':
+        return 'Lecture seule';
+      default:
+        return 'Utilisateur';
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'text-red-600';
+      case 'comptable':
+        return 'text-blue-600';
+      case 'commercial':
+        return 'text-green-600';
+      case 'lecture':
+        return 'text-gray-600';
+      default:
+        return 'text-indigo-600';
+    }
+  };
+
+  const handleProfileClick = () => {
+    setShowProfileModal(true);
+    setIsOpen(false);
+  };
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    setIsOpen(false);
+  };
+
+  return (
+    <>
+      <div className={`relative ${className}`}>
+        {/* Trigger Button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-100 transition-all duration-200 group"
+        >
+          <UserProfileAvatar
+            user={user}
+            size="md"
+            editable={false}
+          />
+          
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors duration-200">
+              {user.fullName}
+            </p>
+            <p className={`text-xs ${getRoleColor(user.role)} font-medium`}>
+              {getRoleText(user.role)}
+            </p>
+          </div>
+          
+          <ChevronDown 
+            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+              isOpen ? 'rotate-180' : ''
+            }`} 
+          />
+        </button>
+
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+            {/* User Info Header */}
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="flex items-center space-x-3">
+                <UserProfileAvatar
+                  user={user}
+                  size="sm"
+                  editable={false}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user.fullName}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="py-2">
+              <button
+                onClick={handleProfileClick}
+                className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+              >
+                <User className="w-4 h-4 text-gray-400" />
+                <span>Mon profil</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  // Action pour les notifications
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+              >
+                <Bell className="w-4 h-4 text-gray-400" />
+                <span>Notifications</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  // Action pour les paramètres
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+              >
+                <Settings className="w-4 h-4 text-gray-400" />
+                <span>Paramètres</span>
+              </button>
+
+              <div className="border-t border-gray-100 my-2"></div>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Se déconnecter</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Profile Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        user={user}
+        onUpdateProfile={onUpdateProfile}
+        onLogout={onLogout}
+      />
+
+      {/* Overlay pour fermer le menu */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </>
+  );
+};
+
+export default UserProfileMenu;

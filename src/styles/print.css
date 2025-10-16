@@ -1,0 +1,732 @@
+/* Styles d'impression pour éviter les coupures */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+  }
+
+  .print-container {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 8mm;
+    box-sizing: border-box;
+    min-height: 297mm;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+  }
+  
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+  }
+  
+  .print-no-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .print-table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .print-table tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .print-table td,
+  .print-table th {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding: 8pt;
+    border: 1pt solid #000;
+  }
+  
+  .print-header {
+    page-break-after: avoid;
+    break-after: avoid;
+    margin-bottom: 20pt;
+    flex-shrink: 0;
+  }
+  
+  .print-footer {
+    page-break-before: avoid;
+    break-before: avoid;
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+  
+  /* Masquer les éléments non nécessaires à l'impression */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Styles pour les boutons et éléments interactifs */
+  button, .btn, .button {
+    display: none !important;
+  }
+
+  /* Optimiser l'espace pour l'impression */
+  .print-optimize {
+    margin: 0;
+    padding: 0;
+    font-size: 12pt;
+    line-height: 1.2;
+  }
+  
+  /* Styles pour les factures */
+  .invoice-print {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto;
+    font-family: Rockwell, Georgia, "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  .invoice-header {
+    margin-bottom: 20pt;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  
+  .invoice-client {
+    margin-bottom: 15pt;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  
+  .invoice-items {
+    margin-bottom: 20pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .invoice-totals {
+    margin-top: 20pt;
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  
+  .invoice-signatures {
+    margin-top: 30pt;
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+
+  /* Styles pour les logos et images */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Styles pour les tableaux */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+  }
+
+  th, td {
+    border: 1pt solid #000;
+    padding: 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+  }
+
+  /* Styles pour les totaux */
+  .total-row {
+    font-weight: bold;
+    background-color: #f8f8f8 !important;
+  }
+
+  .grand-total {
+    font-weight: bold;
+    font-size: 14pt;
+    background-color: #e0e0e0 !important;
+  }
+
+  /* Styles pour les signatures */
+  .signature-area {
+    margin-top: 40pt;
+    border-top: 1pt solid #000;
+    padding-top: 10pt;
+  }
+
+  /* Styles pour les montants en lettres */
+  .amount-in-words {
+    font-style: italic;
+    font-weight: bold;
+    margin: 15pt 0;
+    padding: 10pt;
+    background-color: #f9f9f9 !important;
+    border: 1pt solid #ccc;
+  }
+
+  /* Styles pour les en-têtes de page */
+  .page-header {
+    border-bottom: 2pt solid #000;
+    padding-bottom: 10pt;
+    margin-bottom: 20pt;
+  }
+
+  /* Styles pour les pieds de page */
+  .page-footer {
+    border-top: 1pt solid #000;
+    padding-top: 10pt;
+    margin-top: 20pt;
+    font-size: 10pt;
+    text-align: center;
+  }
+
+  /* Styles pour les conditions de paiement */
+  .payment-terms {
+    margin: 15pt 0;
+    padding: 10pt;
+    background-color: #f5f5f5 !important;
+    border-left: 4pt solid #007bff;
+  }
+
+  /* Styles pour les références et numéros */
+  .document-number {
+    font-weight: bold;
+    font-size: 14pt;
+    text-align: center;
+    margin: 10pt 0;
+  }
+
+  /* Styles pour les dates */
+  .document-date {
+    text-align: right;
+    font-style: italic;
+    margin-bottom: 15pt;
+  }
+
+  /* Styles pour les informations client */
+  .client-info {
+    margin: 15pt 0;
+    padding: 10pt;
+    background-color: #fafafa !important;
+    border: 1pt solid #ddd;
+  }
+
+  /* Styles pour les informations entreprise */
+  .company-info {
+    margin-bottom: 20pt;
+  }
+
+  .company-logo {
+    float: left;
+    margin-right: 15pt;
+    margin-bottom: 10pt;
+  }
+
+  .company-details {
+    overflow: hidden;
+  }
+
+  /* Styles pour les descriptions d'articles */
+  .item-description {
+    min-width: 200pt;
+  }
+
+  .item-quantity {
+    text-align: center;
+    width: 60pt;
+  }
+
+  .item-price {
+    text-align: right;
+    width: 80pt;
+  }
+
+  .item-total {
+    text-align: right;
+    width: 80pt;
+    font-weight: bold;
+  }
+
+  /* Styles pour les totaux de section */
+  .subtotal {
+    text-align: right;
+    font-weight: bold;
+  }
+
+  .tax-amount {
+    text-align: right;
+  }
+
+  .grand-total-amount {
+    text-align: right;
+    font-weight: bold;
+    font-size: 14pt;
+    background-color: #e0e0e0 !important;
+  }
+
+  /* Styles spécifiques pour EDIBA INTER */
+  .ediba-header {
+    border-bottom: 3pt solid #1d4ed8;
+    padding-bottom: 15pt;
+    margin-bottom: 20pt;
+  }
+
+  .ediba-logo {
+    width: 60pt;
+    height: 60pt;
+    margin-right: 15pt;
+  }
+
+  .ediba-company-info {
+    font-size: 11pt;
+    line-height: 1.3;
+  }
+
+  .ediba-document-title {
+    text-align: center;
+    font-size: 16pt;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 20pt 0;
+    color: #1d4ed8;
+  }
+
+  .ediba-client-info {
+    font-weight: bold;
+    margin-bottom: 15pt;
+    padding: 10pt;
+    background-color: #f8fafc !important;
+    border-left: 4pt solid #1d4ed8;
+  }
+
+  .ediba-table {
+    border: 2pt solid #000;
+    margin: 15pt 0;
+  }
+
+  .ediba-table th {
+    background-color: #1d4ed8 !important;
+    color: white !important;
+    font-weight: bold;
+    text-align: center;
+    padding: 8pt;
+  }
+
+  .ediba-table td {
+    padding: 6pt;
+    border: 1pt solid #000;
+  }
+
+  .ediba-totals {
+    margin-top: 20pt;
+    border: 2pt solid #000;
+  }
+
+  .ediba-total-row {
+    font-weight: bold;
+    background-color: #f0f9ff !important;
+  }
+
+  .ediba-grand-total {
+    font-weight: bold;
+    font-size: 14pt;
+    background-color: #1d4ed8 !important;
+    color: white !important;
+  }
+
+  .ediba-signature {
+    margin-top: 40pt;
+    text-align: right;
+    font-weight: bold;
+  }
+
+  .ediba-footer {
+    margin-top: 30pt;
+    padding: 15pt;
+    background-color: #f8fafc !important;
+    border-top: 2pt solid #1d4ed8;
+    font-size: 10pt;
+  }
+
+  .ediba-footer-gradient {
+    background: linear-gradient(90deg, #1d4ed8, #10b981) !important;
+    color: white !important;
+    text-align: center;
+    padding: 8pt;
+    margin-top: 10pt;
+  }
+
+  /* Optimisation pour l'impression A4 */
+  @page {
+    size: A4;
+    margin: 6mm;
+  }
+
+  /* Styles pour les couleurs d'impression */
+  .print-color-blue {
+    color: #1d4ed8 !important;
+  }
+
+  .print-bg-blue {
+    background-color: #1d4ed8 !important;
+  }
+
+  .print-bg-light-blue {
+    background-color: #f0f9ff !important;
+  }
+
+  .print-border-blue {
+    border-color: #1d4ed8 !important;
+  }
+
+  /* Styles spécifiques pour le template recommandé EDIBA */
+  .ediba-top-banner {
+    background-color: #1d4ed8 !important;
+    height: 20pt;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .ediba-logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10pt;
+  }
+
+  .ediba-logo-e {
+    width: 20pt;
+    height: 20pt;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ediba-logo-e-top {
+    width: 12pt;
+    height: 6pt;
+    background-color: #1d4ed8 !important;
+    margin-bottom: 2pt;
+  }
+
+  .ediba-logo-e-bottom {
+    width: 8pt;
+    height: 6pt;
+    background-color: #10b981 !important;
+    margin-left: 4pt;
+  }
+
+  .ediba-company-name {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-left: 8pt;
+  }
+
+  .ediba-company-name-blue {
+    color: #1d4ed8 !important;
+  }
+
+  .ediba-company-name-black {
+    color: #000 !important;
+  }
+
+  .ediba-service-description {
+    font-size: 9pt;
+    line-height: 1.2;
+    color: #000 !important;
+    margin-top: 5pt;
+  }
+
+  .ediba-contact-info {
+    font-size: 9pt;
+    line-height: 1.3;
+    text-align: right;
+    color: #000 !important;
+  }
+
+  .ediba-document-title {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 15pt 0;
+    color: #000 !important;
+  }
+
+  .ediba-client-info {
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 10pt;
+    color: #000 !important;
+  }
+
+  .ediba-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 10pt;
+  }
+
+  .ediba-items-table th {
+    background-color: #f0f0f0 !important;
+    color: #000 !important;
+    font-weight: bold;
+    text-align: center;
+    padding: 4pt;
+    border: 1pt solid #000 !important;
+  }
+
+  .ediba-items-table td {
+    padding: 3pt;
+    border: 1pt solid #000 !important;
+    text-align: left;
+  }
+
+  .ediba-items-table td.number {
+    text-align: center;
+  }
+
+  .ediba-items-table td.quantity {
+    text-align: center;
+  }
+
+  .ediba-items-table td.price {
+    text-align: right;
+  }
+
+  .ediba-items-table td.total {
+    text-align: right;
+    font-weight: bold;
+  }
+
+  .ediba-totals-section {
+    margin-top: 10pt;
+  }
+
+  .ediba-total-row {
+    font-weight: bold;
+    background-color: #f8f8f8 !important;
+  }
+
+  .ediba-grand-total {
+    font-weight: bold;
+    font-size: 12pt;
+    background-color: #e0e0e0 !important;
+  }
+
+  .ediba-amount-in-words {
+    font-style: italic;
+    font-weight: bold;
+    margin: 10pt 0;
+    padding: 8pt;
+    background-color: #f9f9f9 !important;
+    border: 1pt solid #ccc !important;
+    font-size: 10pt;
+  }
+
+  .ediba-signature {
+    margin-top: 30pt;
+    text-align: right;
+    font-weight: bold;
+    font-size: 11pt;
+  }
+
+  .ediba-footer-banner {
+    background: linear-gradient(90deg, #1d4ed8, #10b981) !important;
+    color: white !important;
+    text-align: center;
+    padding: 6pt;
+    margin-top: 20pt;
+    font-size: 8pt;
+    font-weight: medium;
+  }
+
+  /* Optimisation pour l'impression A4 complète */
+  .ediba-full-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .ediba-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ediba-footer-area {
+    margin-top: auto;
+  }
+
+  /* Styles pour les images d'en-tête et de pied */
+  .print-header img {
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .print-footer img {
+    width: 100%;
+    height: auto;
+    max-height: 80px;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Optimisation pour le template recommandé avec images */
+  .recommended-template {
+    display: flex;
+    flex-direction: column;
+    min-height: 297mm;
+  }
+
+  .recommended-header {
+    flex-shrink: 0;
+    margin-bottom: 15pt;
+  }
+
+  .recommended-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .recommended-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+
+  /* Styles pour les informations d'entreprise */
+  .company-info {
+    text-align: right;
+    font-size: 9pt;
+    line-height: 1.3;
+    color: #000;
+  }
+
+  .company-info div {
+    margin-bottom: 2pt;
+  }
+
+  .company-info .label {
+    font-weight: bold;
+  }
+
+  /* Styles pour le titre du document */
+  .document-title {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 15pt 0;
+    color: #000;
+  }
+
+  /* Styles pour le client */
+  .client-info {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 10pt;
+    color: #000;
+  }
+
+  /* Styles pour le tableau */
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin: 10pt 0;
+  }
+
+  .items-table th {
+    background-color: #f0f0f0;
+    color: #000;
+    font-weight: bold;
+    text-align: center;
+    padding: 4pt;
+    border: 1pt solid #000;
+  }
+
+  .items-table td {
+    padding: 3pt;
+    border: 1pt solid #000;
+    text-align: left;
+  }
+
+  .items-table td.number {
+    text-align: center;
+  }
+
+  .items-table td.quantity {
+    text-align: center;
+  }
+
+  .items-table td.price {
+    text-align: right;
+  }
+
+  .items-table td.total {
+    text-align: right;
+    font-weight: bold;
+  }
+
+  /* Styles pour les totaux */
+  .totals-section {
+    margin-top: 10pt;
+  }
+
+  .total-row {
+    font-weight: bold;
+    background-color: #f8f8f8;
+  }
+
+  .grand-total {
+    font-weight: bold;
+    font-size: 12pt;
+    background-color: #e0e0e0;
+  }
+
+  /* Styles pour le montant en lettres */
+  .amount-in-words {
+    font-style: italic;
+    font-weight: bold;
+    margin: 10pt 0;
+    padding: 8pt;
+    background-color: #f9f9f9;
+    border: 1pt solid #ccc;
+    font-size: 10pt;
+  }
+
+  /* Styles pour la signature */
+  .signature {
+    margin-top: 30pt;
+    text-align: right;
+    font-weight: bold;
+    font-size: 11pt;
+  }
+}
