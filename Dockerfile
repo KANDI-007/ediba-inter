@@ -1,35 +1,21 @@
-# Dockerfile pour EDIBA-INTER
-FROM node:18-alpine AS builder
+# Dockerfile spécifique pour Railway - Serveur WebSocket
+FROM node:18-alpine
 
 # Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Copier les fichiers package
 COPY package*.json ./
+COPY websocket-production-package.json ./package.json
 
 # Installer les dépendances
-RUN npm ci --only=production
+RUN npm install
 
-# Copier le code source
-COPY . .
+# Copier le serveur WebSocket
+COPY websocket-server-production.cjs ./
 
-# Construire l'application
-RUN npm run build
+# Exposer le port (Railway utilise la variable PORT)
+EXPOSE 3001
 
-# Stage de production avec nginx
-FROM nginx:alpine AS production
-
-# Copier les fichiers buildés
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copier la configuration nginx personnalisée
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copier les fichiers statiques
-COPY public/ /usr/share/nginx/html/
-
-# Exposer le port 80
-EXPOSE 80
-
-# Démarrer nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Commande de démarrage
+CMD ["node", "websocket-server-production.cjs"]
