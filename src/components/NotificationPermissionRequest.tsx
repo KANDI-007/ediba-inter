@@ -46,7 +46,7 @@ export const NotificationPermissionRequest: React.FC<NotificationPermissionReque
         // Afficher une notification de test
         new Notification('EDIBA INTER', {
           body: 'Les notifications sont maintenant activées !',
-          icon: '/icon-ei-blue.svg',
+          icon: './icon-ei-blue.svg',
           tag: 'permission-granted'
         });
       } else {

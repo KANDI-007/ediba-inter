@@ -189,7 +189,7 @@ function App() {
                     <UserPresenceProvider 
                       currentUserId="current-user-id"
                       currentUserName="Utilisateur Actuel"
-                      currentUserAvatar="/default-avatar.png"
+                      currentUserAvatar="./default-avatar.png"
                     >
                       <AppContent />
                       <NotificationContainer />

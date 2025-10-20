@@ -66,7 +66,7 @@ const ChatConversation: React.FC<ChatConversationProps> = ({ conversation }) => 
       timestamp: new Date(Date.now() - 3300000).toISOString(),
       isRead: true,
       isDelivered: true,
-      fileUrl: '/placeholder-image.jpg',
+      fileUrl: './placeholder-image.jpg',
       fileName: 'screenshot.png'
     },
     {

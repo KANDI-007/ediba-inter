@@ -97,11 +97,11 @@ const ChatModule: React.FC = () => {
 
   // Utilisateurs simulés pour la démonstration
   const availableUsers = [
-    { id: '1', username: 'admin', fullName: 'Administrateur', avatar: '/admin-avatar.png', isOnline: true },
-    { id: '2', username: 'manager', fullName: 'Gestionnaire', avatar: '/manager-avatar.png', isOnline: true },
-    { id: '3', username: 'user1', fullName: 'Utilisateur 1', avatar: '/user1-avatar.png', isOnline: false },
-    { id: '4', username: 'user2', fullName: 'Utilisateur 2', avatar: '/user2-avatar.png', isOnline: true },
-    { id: '5', username: 'user3', fullName: 'Utilisateur 3', avatar: '/user3-avatar.png', isOnline: true },
+    { id: '1', username: 'admin', fullName: 'Administrateur', avatar: './default-avatar.png', isOnline: true },
+    { id: '2', username: 'manager', fullName: 'Gestionnaire', avatar: './default-avatar.png', isOnline: true },
+    { id: '3', username: 'user1', fullName: 'Utilisateur 1', avatar: './default-avatar.png', isOnline: false },
+    { id: '4', username: 'user2', fullName: 'Utilisateur 2', avatar: './default-avatar.png', isOnline: true },
+    { id: '5', username: 'user3', fullName: 'Utilisateur 3', avatar: './default-avatar.png', isOnline: true },
   ];
 
   const filteredUsers = availableUsers.filter(user => 
