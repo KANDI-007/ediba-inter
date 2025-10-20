@@ -1,0 +1,31 @@
+{
+  "name": "ediba-inter-websocket-server",
+  "version": "1.0.0",
+  "description": "Serveur WebSocket pour chat en temps réel EDIBA-INTER",
+  "main": "websocket-server.js",
+  "scripts": {
+    "start": "node websocket-server.js",
+    "dev": "nodemon websocket-server.js",
+    "test": "echo \"Tests à implémenter\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "websocket",
+    "socket.io",
+    "chat",
+    "realtime",
+    "ediba-inter"
+  ],
+  "author": "EDIBA INTER SARL U",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
