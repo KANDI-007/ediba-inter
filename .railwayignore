@@ -1,0 +1,26 @@
+# Fichiers à ignorer pour Railway
+node_modules/
+dist/
+.github/
+*.md
+*.bat
+*.ps1
+*.sh
+src/
+public/
+vite.config.ts
+tailwind.config.js
+postcss.config.js
+eslint.config.js
+tsconfig*.json
+vitest.config.ts
+netlify.toml
+vercel.json
+Dockerfile
+nginx.conf
+simple-backend-server.cjs
+websocket-server.js
+websocket-server-simple.js
+websocket-server-simple.cjs
+package-websocket.json
+websocket-package.json
