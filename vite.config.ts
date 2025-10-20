@@ -37,5 +37,13 @@ export default defineConfig({
     headers: {
       'Service-Worker-Allowed': '/'
     }
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    headers: {
+      'Service-Worker-Allowed': '/',
+      'Content-Type': 'application/javascript'
+    }
   }
 });
