@@ -226,7 +226,7 @@ const ChatConversation: React.FC<ChatConversationProps> = ({ conversation }) => 
               {message.type === 'image' && (
                 <div className="space-y-2">
                   <img
-                    src={message.fileUrl || './placeholder-image.jpg'}
+                    src="./placeholder-image.jpg"
                     alt={message.fileName || 'Image'}
                     className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => window.open(message.fileUrl, '_blank')}

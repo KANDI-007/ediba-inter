@@ -208,7 +208,7 @@ const ChatModule: React.FC = () => {
                   >
                     <div className="relative">
                       <img
-                        src={user.avatar || './default-avatar.png'}
+                        src="./default-avatar.png"
                         alt={user.fullName}
                         className="w-10 h-10 rounded-full object-cover"
                       />

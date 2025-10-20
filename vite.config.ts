@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/', // Chemins absolus pour Netlify
+  base: './', // Chemins relatifs pour Netlify
   plugins: [react()],
   resolve: {
     alias: {
