@@ -66,7 +66,7 @@ const ClassicTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
         <div className="flex items-center">
           <div className="w-16 h-16 mr-4 flex-shrink-0">
             <img 
-              src="/logo-ediba.png" 
+              src="./logo-ediba.png" 
               alt="Logo EDIBA INTER" 
               className="w-full h-full object-contain"
               onError={(e) => {
@@ -429,7 +429,7 @@ const DeliveryTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
     <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Rockwell, Georgia, \"Times New Roman\", Times, serif', minHeight: '297mm', display: 'flex', flexDirection: 'column' }}>
       {/* En-tête identique Proforma: image pleine largeur */}
       <div className="w-full print-header" style={{ marginBottom: '10px' }}>
-        <img src="/factureimage/header.jpg.jpg" alt="EDIBA INTER" style={{ width: '100%', height: 'auto', maxHeight: 140, objectFit: 'cover', display: 'block' }} />
+        <img src="./factureimage/header.jpg" alt="EDIBA INTER" style={{ width: '100%', height: 'auto', maxHeight: 140, objectFit: 'cover', display: 'block' }} />
       </div>
 
       {/* Infos société à gauche + date centrée + client à gauche */}
@@ -507,7 +507,7 @@ const DeliveryTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
       <div style={{ marginTop: 'auto' }} />
       <div className="print-footer" style={{ textAlign: 'center' }}>
         <img 
-          src="/pied.png.png" 
+          src="./pied.png" 
           alt="Pied de page EDIBA INTER" 
           className="w-full h-auto"
           style={{ maxHeight: '120px', objectFit: 'contain' }}
@@ -1097,7 +1097,7 @@ const KilimandjaroTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
           <div className="flex items-start space-x-8">
             <div className="w-40 h-40 flex-shrink-0">
               <img 
-                src="/logo-ediba.png" 
+                src="./logo-ediba.png" 
                 alt="Logo EDIBA INTER" 
                 className="w-full h-full object-contain"
                 onError={(e) => {
@@ -1313,7 +1313,7 @@ const RecommendedTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
       {/* En-tête avec image personnalisée */}
       <div className="w-full print-header" style={{ marginBottom: '20px' }}>
         <img 
-          src="/entete.png.png" 
+          src="./entete.png" 
           alt="En-tête EDIBA INTER" 
           className="w-full h-auto"
           style={{ maxHeight: '120px', objectFit: 'contain' }}
@@ -1416,7 +1416,7 @@ const RecommendedTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
       {/* Pied de page avec image personnalisée */}
       <div className="mt-8 print-footer">
         <img 
-          src="/pied.png.png" 
+          src="./pied.png" 
           alt="Pied de page EDIBA INTER" 
           className="w-full h-auto"
           style={{ maxHeight: '120px', objectFit: 'contain' }}
@@ -1451,7 +1451,7 @@ const ProformaTemplate: React.FC<InvoiceTemplateProps> = ({ form, design }) => {
       <div className="print-container recommended-template" style={{ width: '210mm', padding: '10mm', margin: '0 auto', color: '#000', fontFamily: 'Rockwell, Georgia, "Times New Roman", Times, serif', display: 'flex', flexDirection: 'column', flex: 1 }}>
         {/* En-tête image plein largeur */}
         <div className="print-header" style={{ marginBottom: 10 }}>
-          <img src="/factureimage/header.jpg.jpg" alt="En-tête EDIBA INTER" style={{ width: '100%', height: 'auto', maxHeight: 140, objectFit: 'cover', display: 'block' }} />
+          <img src="./factureimage/header.jpg" alt="En-tête EDIBA INTER" style={{ width: '100%', height: 'auto', maxHeight: 140, objectFit: 'cover', display: 'block' }} />
         </div>
 
         {/* Infos société à gauche sous l'image */}
@@ -1573,7 +1573,7 @@ const ProformaTemplate: React.FC<InvoiceTemplateProps> = ({ form, design }) => {
         {/* Pied de page collé en bas */}
         <div style={{ marginTop: 'auto' }} />
         <div className="recommended-footer print-footer" style={{ textAlign: 'center' }}>
-          <img src="/factureimage/footer.jpg.jpg" alt="Pied de page" style={{ width: '100%', height: 'auto', maxHeight: 120, objectFit: 'cover', display: 'block' }} />
+          <img src="./factureimage/footer.jpg" alt="Pied de page" style={{ width: '100%', height: 'auto', maxHeight: 120, objectFit: 'cover', display: 'block' }} />
         </div>
       </div>
     </div>

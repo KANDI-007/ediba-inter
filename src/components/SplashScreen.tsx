@@ -7,7 +7,7 @@ const SplashScreen: React.FC = () => {
       <div className="text-center">
         {/* Logo avec animation */}
         <div className="relative mb-8">
-          <img src="/logo-ediba.png" alt="EDIBA-INTER" className="w-56 h-auto mx-auto mb-4 animate-pulse" />
+          <img src="./logo-ediba.png" alt="EDIBA-INTER" className="w-56 h-auto mx-auto mb-4 animate-pulse" />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20"></div>
         </div>
 

@@ -612,7 +612,7 @@ const DischargeModule: React.FC = () => {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <img 
-                    src="/factureimage/header.jpg.jpg" 
+                    src="./factureimage/header.jpg" 
                     alt="Logo EDIBA INTER" 
                     style={{ 
                       height: '60px', 
@@ -719,7 +719,7 @@ const DischargeModule: React.FC = () => {
             {/* Pied de page avec image */}
             <div className="decharge-footer">
               <img 
-                src="/factureimage/footer.jpg.jpg" 
+                src="./factureimage/footer.jpg" 
                 alt="Footer EDIBA INTER" 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;

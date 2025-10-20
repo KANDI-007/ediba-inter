@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-2xl p-8 transform transition-all duration-500 hover:scale-105 border border-brand-blue/10">
           {/* Logo */}
           <div className="text-center mb-8">
-            <img src="/logo-ediba.png" alt="EDIBA-INTER" className="mx-auto mb-4 h-16 object-contain" />
+            <img src="./logo-ediba.png" alt="EDIBA-INTER" className="mx-auto mb-4 h-16 object-contain" />
             <h1 className="text-2xl font-bold text-gray-800">EDIBA-INTER</h1>
             <p className="text-gray-600 text-sm">Application de Facturation</p>
           </div>

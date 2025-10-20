@@ -52,7 +52,7 @@ function InvoiceProforma({ data = defaultData }: Props) {
     <div className="print-container recommended-template" style={{ width: '210mm', padding: '10mm', margin: '0 auto', color: '#000', fontFamily: 'Arial, sans-serif' }}>
       <div className="recommended-header print-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
         {/* En-tête: image gauche + infos entreprise droite */}
-        <img src="/factureimage/header.jpg.jpg" alt="EDIBA INTER" style={{ maxWidth: '45%' }} />
+        <img src="./factureimage/header.jpg" alt="EDIBA INTER" style={{ maxWidth: '45%' }} />
         <div className="company-info" style={{ textAlign: 'right', fontSize: '10pt' }}>
           <div><span className="label">Raison Sociale :</span> EDIBA INTER SARL U</div>
           <div><span className="label">Adresse :</span> Agbalépedo, Rue 335 AGP, Lomé</div>
@@ -118,7 +118,7 @@ function InvoiceProforma({ data = defaultData }: Props) {
       </div>
 
       <div className="recommended-footer print-footer" style={{ marginTop: 16, textAlign: 'center' }}>
-        <img src="/factureimage/footer.jpg.jpg" alt="Pied de page" />
+        <img src="./factureimage/footer.jpg" alt="Pied de page" />
       </div>
 
       <div className="no-print" style={{ marginTop: 16, textAlign: 'center' }}>

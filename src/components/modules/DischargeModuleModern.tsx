@@ -943,7 +943,7 @@ const DischargeModuleModern: React.FC = () => {
               {/* En-tête professionnel avec image */}
               <div className="decharge-header">
                 <img 
-                  src="/factureimage/header.jpg.jpg" 
+                  src="./factureimage/header.jpg" 
                   alt="En-tête EDIBA INTER" 
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -1043,7 +1043,7 @@ const DischargeModuleModern: React.FC = () => {
               {/* Pied de page professionnel avec image */}
               <div className="decharge-footer">
                 <img 
-                  src="/factureimage/footer.jpg.jpg" 
+                  src="./factureimage/footer.jpg" 
                   alt="Pied de page EDIBA INTER" 
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
