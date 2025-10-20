@@ -4,12 +4,14 @@ import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './', // Chemin relatif pour Netlify
   plugins: [react()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
     },
   },
+  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg', '**/*.webp'],
   optimizeDeps: {
     exclude: ['lucide-react'],
   },

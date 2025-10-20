@@ -123,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="relative bg-white p-2 rounded-xl shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:rotate-2">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 rounded-xl"></div>
                 <div className="relative bg-white p-1.5 rounded-lg shadow-inner">
-                  <img src="/logo-ediba.png" alt="EDIBA-INTER" className="h-6 w-auto" />
+                  <img src="./logo-ediba.png" alt="EDIBA-INTER" className="h-6 w-auto" />
                 </div>
                 {/* Effet de brillance */}
                 <div className="absolute top-0.5 left-0.5 right-0.5 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent rounded-full"></div>
@@ -219,7 +219,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="relative bg-white p-2.5 rounded-xl shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:rotate-2">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 rounded-xl"></div>
                 <div className="relative bg-white p-2 rounded-lg shadow-inner">
-                  <img src="/logo-ediba.png" alt="EDIBA-INTER" className="h-7 w-auto" />
+                  <img src="./logo-ediba.png" alt="EDIBA-INTER" className="h-7 w-auto" />
                 </div>
                 {/* Effet de brillance */}
                 <div className="absolute top-0.5 left-0.5 right-0.5 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent rounded-full"></div>

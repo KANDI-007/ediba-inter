@@ -190,7 +190,7 @@ const ChatInterface: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="relative online-status">
                   <img
-                    src={activeConversation.participants.find(p => p.id !== currentUser?.id)?.avatar || '/default-avatar.png'}
+                    src={activeConversation.participants.find(p => p.id !== currentUser?.id)?.avatar || './default-avatar.png'}
                     alt="Avatar"
                     className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-lg"
                   />

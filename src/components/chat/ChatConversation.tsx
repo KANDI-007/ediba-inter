@@ -180,7 +180,7 @@ const ChatConversation: React.FC<ChatConversationProps> = ({ conversation }) => 
           {showAvatar && !isCurrentUser && (
             <div className="flex-shrink-0 mr-2">
               <img
-                src={conversation.participants.find(p => p.id !== 'current')?.avatar || '/default-avatar.png'}
+                src={conversation.participants.find(p => p.id !== 'current')?.avatar || './default-avatar.png'}
                 alt="Avatar"
                 className="w-8 h-8 rounded-full object-cover"
               />
@@ -226,7 +226,7 @@ const ChatConversation: React.FC<ChatConversationProps> = ({ conversation }) => 
               {message.type === 'image' && (
                 <div className="space-y-2">
                   <img
-                    src={message.fileUrl || '/placeholder-image.jpg'}
+                    src={message.fileUrl || './placeholder-image.jpg'}
                     alt={message.fileName || 'Image'}
                     className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => window.open(message.fileUrl, '_blank')}

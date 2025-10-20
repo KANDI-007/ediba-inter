@@ -104,7 +104,7 @@ const ConnectedUsersPanel: React.FC = () => {
                   <div key={user.id} className="user-presence">
                     <div className="user-presence-avatar">
                       <img
-                        src={user.avatar || '/default-avatar.png'}
+                        src={user.avatar || './default-avatar.png'}
                         alt={user.fullName}
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -144,7 +144,7 @@ const ConnectedUsersPanel: React.FC = () => {
                   <div key={user.id} className="user-presence">
                     <div className="user-presence-avatar">
                       <img
-                        src={user.avatar || '/default-avatar.png'}
+                        src={user.avatar || './default-avatar.png'}
                         alt={user.fullName}
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -192,7 +192,7 @@ const ConnectedUsersPanel: React.FC = () => {
                     <div key={user.id} className="user-presence">
                       <div className="user-presence-avatar">
                         <img
-                          src={user.avatar || '/default-avatar.png'}
+                          src={user.avatar || './default-avatar.png'}
                           alt={user.fullName}
                           className="w-10 h-10 rounded-full object-cover"
                         />

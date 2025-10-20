@@ -253,7 +253,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           </div>
                         ) : (
                           <img
-                            src={avatar || '/default-avatar.png'}
+                            src={avatar || './default-avatar.png'}
                             alt={displayName}
                             className="w-14 h-14 rounded-2xl object-cover shadow-lg"
                           />
