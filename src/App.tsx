@@ -38,7 +38,7 @@ import { ActivityProvider } from './contexts/ActivityContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { FiscalYearProvider } from './contexts/FiscalYearContext';
 import { BackupProvider } from './contexts/BackupContext';
-import { ChatProvider } from './contexts/ChatContextSimple';
+import { ChatProvider } from './contexts/ChatContextProduction';
 import { UserPresenceProvider } from './contexts/UserPresenceContext';
 import ChatModule from './components/modules/ChatModuleSimple';
 import NotificationContainer from './components/NotificationToast';

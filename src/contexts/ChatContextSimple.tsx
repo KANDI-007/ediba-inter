@@ -99,7 +99,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       socket.disconnect();
     }
 
-    const newSocket = io('http://localhost:3000', {
+    const newSocket = io('http://localhost:3001', {
       transports: ['polling', 'websocket'],
       timeout: 10000,
       forceNew: true,

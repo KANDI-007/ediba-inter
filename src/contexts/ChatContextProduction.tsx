@@ -1,9 +1,9 @@
-// ChatContext amélioré pour chat multi-utilisateurs en temps réel
+// ChatContext avec détection automatique d'environnement
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { notificationManager } from '../utils/NotificationManager';
 
-// Types améliorés pour le chat multi-utilisateurs
+// Types pour le chat
 export interface ChatUser {
   id: string;
   username: string;
@@ -48,6 +48,8 @@ interface ChatContextType {
   isConnected: boolean;
   socket: Socket | null;
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
+  environment: 'local' | 'production';
+  websocketUrl: string;
   
   // Utilisateurs
   currentUser: ChatUser | null;
@@ -111,6 +113,10 @@ interface ChatProviderProps {
 }
 
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
+  // Détection automatique de l'environnement
+  const [environment, setEnvironment] = useState<'local' | 'production'>('local');
+  const [websocketUrl, setWebsocketUrl] = useState<string>('http://localhost:3001');
+  
   // État de connexion
   const [isConnected, setIsConnected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -138,9 +144,36 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
 
+  // Détection automatique de l'environnement
+  useEffect(() => {
+    const detectEnvironment = () => {
+      const hostname = window.location.hostname;
+      const protocol = window.location.protocol;
+      
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        setEnvironment('local');
+        setWebsocketUrl('http://localhost:3001');
+      } else if (hostname.includes('netlify.app')) {
+        setEnvironment('production');
+        // URL du serveur WebSocket de production (à configurer)
+        setWebsocketUrl('https://ediba-inter-websocket.herokuapp.com');
+      } else {
+        setEnvironment('production');
+        setWebsocketUrl('https://ediba-inter-websocket.herokuapp.com');
+      }
+      
+      console.log(`🌐 Environnement détecté: ${environment}`);
+      console.log(`🔌 URL WebSocket: ${websocketUrl}`);
+    };
+    
+    detectEnvironment();
+  }, [environment, websocketUrl]);
+
   // Connexion au chat avec gestion améliorée
   const connectToChat = (user: ChatUser) => {
     console.log('🔄 Connexion au chat pour:', user);
+    console.log(`🌐 Environnement: ${environment}`);
+    console.log(`🔌 URL WebSocket: ${websocketUrl}`);
     
     // Demander les permissions de notification
     notificationManager.requestPermission().then(granted => {
@@ -157,7 +190,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
 
     setConnectionStatus('connecting');
 
-    const newSocket = io('http://localhost:3001', {
+    const newSocket = io(websocketUrl, {
       transports: ['polling', 'websocket'],
       timeout: 10000,
       forceNew: true,
@@ -491,7 +524,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     }
   };
 
-  // Fonctions d'appel (inchangées)
+  // Fonctions d'appel
   const initiateCall = (targetUserId: string, callType: 'audio' | 'video' = 'audio') => {
     if (socket && currentUser) {
       console.log('📞 Initiation d\'appel:', { targetUserId, callType });
@@ -619,6 +652,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     isConnected,
     socket,
     connectionStatus,
+    environment,
+    websocketUrl,
     currentUser,
     onlineUsers,
     conversations,

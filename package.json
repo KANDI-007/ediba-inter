@@ -39,6 +39,7 @@
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.344.0",
     "multer": "^2.0.2",
+    "nodemon": "^3.1.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.3.8",
@@ -71,11 +72,11 @@
     "vitest": "^1.6.0"
   },
   "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.0.0",
+    "@rollup/rollup-darwin-x64": "^4.0.0",
     "@rollup/rollup-linux-x64-gnu": "^4.0.0",
     "@rollup/rollup-linux-x64-musl": "^4.0.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.0.0",
-    "@rollup/rollup-darwin-x64": "^4.0.0",
-    "@rollup/rollup-darwin-arm64": "^4.0.0"
+    "@rollup/rollup-win32-x64-msvc": "^4.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
