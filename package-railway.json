@@ -1,0 +1,32 @@
+{
+  "name": "ediba-inter-websocket-production",
+  "version": "1.0.0",
+  "description": "Serveur WebSocket de production pour EDIBA-INTER",
+  "main": "websocket-server-production.cjs",
+  "scripts": {
+    "start": "node websocket-server-production.cjs",
+    "dev": "nodemon websocket-server-production.cjs",
+    "test": "echo \"Tests à implémenter\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "websocket",
+    "socket.io",
+    "chat",
+    "realtime",
+    "ediba-inter",
+    "production"
+  ],
+  "author": "EDIBA INTER SARL U",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
