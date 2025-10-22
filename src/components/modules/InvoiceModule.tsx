@@ -116,6 +116,8 @@ const InvoiceModule: React.FC = () => {
     tva: 18,
     items: [{ description: '', quantity: 1, unitPrice: 0 } as { description: string; quantity: number; unitPrice: number }],
     paymentTermsDays: 0,
+    paymentMethod: 'Non spécifié',
+    latePaymentInterest: 'Taux d\'intérêts légal en vigueur',
   });
 
   // Fonction pour générer automatiquement le numéro de facture
@@ -807,6 +809,8 @@ const InvoiceModule: React.FC = () => {
                               tva: doc.tva,
                               items: doc.items,
                               paymentTermsDays: doc.paymentTermsDays || 30,
+                              paymentMethod: doc.paymentMethod || 'Non spécifié',
+                              latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur',
                               contractOrderReference: doc.contractOrderReference
                             });
                             setNewDocType(doc.type);
@@ -890,7 +894,9 @@ const InvoiceModule: React.FC = () => {
                             city: doc.city || '',
                             tva: doc.tva,
                             items: doc.items,
-                            paymentTermsDays: doc.paymentTermsDays || 30
+                            paymentTermsDays: doc.paymentTermsDays || 30,
+                            paymentMethod: doc.paymentMethod || 'Non spécifié',
+                            latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur'
                           });
                           setNewDocType(doc.type);
                           setShowNewModal(true);
@@ -914,7 +920,9 @@ const InvoiceModule: React.FC = () => {
                             city: doc.city || '',
                             tva: doc.tva,
                             items: doc.items,
-                            paymentTermsDays: doc.paymentTermsDays || 30
+                            paymentTermsDays: doc.paymentTermsDays || 30,
+                            paymentMethod: doc.paymentMethod || 'Non spécifié',
+                            latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur'
                           });
                           setNewDocType(doc.type);
                           setShowAdvancedPrint(true);
@@ -975,7 +983,9 @@ const InvoiceModule: React.FC = () => {
                                   city: doc.city || '',
                                   tva: doc.tva,
                                   items: doc.items,
-                                  paymentTermsDays: doc.paymentTermsDays || 30
+                                  paymentTermsDays: doc.paymentTermsDays || 30,
+                                  paymentMethod: doc.paymentMethod || 'Non spécifié',
+                                  latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur'
                                 });
                                 setNewDocType(doc.type);
                                 setShowNewModal(true);
@@ -1188,11 +1198,55 @@ const InvoiceModule: React.FC = () => {
                 <div>
                   <label className="text-sm text-gray-600">Conditions de paiement</label>
                   <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.paymentTermsDays} onChange={(e) => setForm({ ...form, paymentTermsDays: Number(e.target.value) })}>
-                    <option value={0}>Comptant</option>
-                    <option value={15}>15 jours</option>
+                    <option value={-1}>Voir détail ci après</option>
+                    <option value={0}>À réception</option>
+                    <option value={-2}>Fin de mois</option>
+                    <option value={10}>10 jours</option>
                     <option value={30}>30 jours</option>
+                    <option value={-3}>30 jours fin de mois</option>
                     <option value={45}>45 jours</option>
+                    <option value={-4}>45 jours fin de mois</option>
                     <option value={60}>60 jours</option>
+                    <option value={-5}>60 jours fin de mois</option>
+                    <option value={75}>75 jours</option>
+                    <option value={-6}>75 jours fin de mois</option>
+                    <option value={90}>90 jours</option>
+                    <option value={-7}>90 jours fin de mois</option>
+                    <option value={105}>105 jours</option>
+                    <option value={-8}>105 jours fin de mois</option>
+                    <option value={120}>120 jours</option>
+                    <option value={-9}>120 jours fin de mois</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Nouvelle ligne pour Mode de paiement et Intérêts de retard */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="text-sm text-gray-600">Mode de paiement</label>
+                  <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.paymentMethod} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}>
+                    <option value="Non spécifié">Non spécifié</option>
+                    <option value="Espèces">Espèces</option>
+                    <option value="Chèque">Chèque</option>
+                    <option value="Virement bancaire">Virement bancaire</option>
+                    <option value="Carte bancaire">Carte bancaire</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Prélèvement">Prélèvement</option>
+                    <option value="Lettre de change">Lettre de change</option>
+                    <option value="Lettre de change relevé">Lettre de change relevé</option>
+                    <option value="Lettre de change sans acceptation">Lettre de change sans acceptation</option>
+                    <option value="Billet à ordre">Billet à ordre</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Intérêts de retard</label>
+                  <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.latePaymentInterest} onChange={(e) => setForm({ ...form, latePaymentInterest: e.target.value })}>
+                    <option value="Taux d'intérêts légal en vigueur">Taux d'intérêts légal en vigueur</option>
+                    <option value="Pas d'intérêts de retard">Pas d'intérêts de retard</option>
+                    <option value="1% par mois">1% par mois</option>
+                    <option value="1,5% par mois">1,5% par mois</option>
+                    <option value="2% par mois">2% par mois</option>
+                    <option value="A préciser">A préciser</option>
                   </select>
                 </div>
               </div>
@@ -1344,6 +1398,8 @@ const InvoiceModule: React.FC = () => {
                                    newDocType === 'invoice' ? 'completed' : 'draft',
                     sourceId: newDocType === 'delivery' ? (sourceForBL || undefined) : undefined,
                     paymentTermsDays: form.paymentTermsDays,
+                    paymentMethod: form.paymentMethod,
+                    latePaymentInterest: form.latePaymentInterest,
                     contractOrderReference: form.contractOrderReference,
                   });
                   logCreate('Facturation', `${getTypeText(newDocType)} ${saved.id}`, saved.id);
