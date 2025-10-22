@@ -2405,9 +2405,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    const toStore = { documents: state.documents, suppliers: state.supplierInvoices, suppliersList: state.suppliersList, supplierInvoices: state.supplierInvoices, clients: state.clients, discharges: state.discharges, contractOrders: state.contractOrders, articlesDirectory: state.articlesDirectory, articleCategories: state.articleCategories, articleLots: state.articleLots, articles: state.articles };
+    const toStore = { 
+      documents: state.documents, 
+      suppliers: state.supplierInvoices, 
+      suppliersList: state.suppliersList, 
+      supplierInvoices: state.supplierInvoices, 
+      clients: state.clients, 
+      discharges: state.discharges, 
+      contractOrders: state.contractOrders, 
+      bankAccounts: state.bankAccounts,
+      articlesDirectory: state.articlesDirectory, 
+      articleCategories: state.articleCategories, 
+      articleLots: state.articleLots, 
+      articles: state.articles 
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
-  }, [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);
+  }, [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.bankAccounts, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);
 
   const api = useMemo<DataContextValue>(() => ({
     documents: state.documents,
@@ -2819,6 +2832,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     // Implémentations des fonctions bancaires
     addBankAccount: (bankAccountInput) => {
+      console.log('🔄 DataContext: Ajout du compte bancaire:', bankAccountInput);
       const id = `bank-${Date.now()}`;
       const bankAccount: BankAccount = {
         ...bankAccountInput,
@@ -2826,10 +2840,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      setState(st => ({
-        ...st,
-        bankAccounts: [...st.bankAccounts, bankAccount]
-      }));
+      console.log('🔄 DataContext: Compte bancaire créé:', bankAccount);
+      setState(st => {
+        const newState = {
+          ...st,
+          bankAccounts: [...st.bankAccounts, bankAccount]
+        };
+        console.log('🔄 DataContext: Nouvel état avec compte bancaire:', newState.bankAccounts);
+        return newState;
+      });
+      console.log('✅ DataContext: Compte bancaire ajouté avec succès');
       return bankAccount;
     },
     updateBankAccount: (id, bankAccountInput) => {

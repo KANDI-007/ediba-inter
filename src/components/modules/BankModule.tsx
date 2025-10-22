@@ -43,7 +43,9 @@ const BankModule: React.FC = () => {
       return;
     }
     
-    addBankAccount(formData);
+    console.log('🔄 Tentative d\'ajout du compte bancaire:', formData);
+    const result = addBankAccount(formData);
+    console.log('✅ Compte bancaire ajouté avec succès:', result);
     setShowAddModal(false);
     resetForm();
   };
