@@ -156,11 +156,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       } else if (hostname.includes('netlify.app')) {
         setEnvironment('production');
         // URL du serveur WebSocket de production (Railway)
-        const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://ediba-inter-production.up.railway.app';
+        const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://web-production-207af.up.railway.app';
         setWebsocketUrl(productionUrl);
       } else {
         setEnvironment('production');
-        const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://ediba-inter-production.up.railway.app';
+        const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://web-production-207af.up.railway.app';
         setWebsocketUrl(productionUrl);
       }
       

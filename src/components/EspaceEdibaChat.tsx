@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useChat } from '../contexts/ChatContextSimple';
+import { useChat } from '../contexts/ChatContextProduction';
 import { useAuth } from '../contexts/AuthContext';
 import FileUploadModal from './FileUploadModal';
 import FileMessage from './FileMessage';

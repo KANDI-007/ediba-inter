@@ -68,7 +68,7 @@ export const UserPresenceProvider: React.FC<UserPresenceProviderProps> = ({
 
   // Initialiser la connexion Socket.IO
   useEffect(() => {
-    const newSocket = io('http://localhost:3000', {
+    const newSocket = io('http://localhost:3001', {
       transports: ['websocket', 'polling']
     });
 

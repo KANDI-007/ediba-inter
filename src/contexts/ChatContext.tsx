@@ -141,7 +141,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       socket.disconnect();
     }
 
-    const newSocket = io('http://localhost:3000', {
+    const newSocket = io('http://localhost:3001', {
       auth: {
         userId: user.id,
         username: user.username,
