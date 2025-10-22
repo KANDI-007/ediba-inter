@@ -6,24 +6,18 @@ import { BankAccount } from '../../contexts/DataContext';
 const BankModule: React.FC = () => {
   const { bankAccounts, addBankAccount, updateBankAccount, deleteBankAccount, setDefaultBankAccount } = useData();
   
-  // Vérification de sécurité
-  if (!bankAccounts) {
-    return (
-      <div className="p-6 bg-red-100 border border-red-400 rounded-lg">
-        <h2 className="text-xl font-bold text-red-800">Erreur Module Banque</h2>
-        <p className="text-red-700">Les données bancaires ne sont pas disponibles</p>
-      </div>
-    );
-  }
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedBank, setSelectedBank] = useState<BankAccount | null>(null);
+  
+  // Vérification de sécurité - permettre le fonctionnement même sans données
+  const safeBankAccounts = bankAccounts || [];
+  
   const [formData, setFormData] = useState<Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>>({
     bankName: '',
     accountNumber: '',
-    accountHolder: 'EDIBA INTER SARL U',
+    accountHolder: '',
     accountType: 'Professionnel',
     currency: 'FCFA',
     swiftCode: '',
@@ -32,17 +26,23 @@ const BankModule: React.FC = () => {
     address: '',
     phone: '',
     email: '',
-    isDefault: false,
+    isDefault: bankAccounts?.length === 0, // Premier compte par défaut
     isActive: true
   });
 
-  const filteredBanks = bankAccounts?.filter(bank =>
+  const filteredBanks = safeBankAccounts?.filter(bank =>
     bank.bankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     bank.accountNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     bank.accountHolder.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
   const handleAdd = () => {
+    // Validation des champs obligatoires
+    if (!formData.bankName.trim() || !formData.accountNumber.trim() || !formData.accountHolder.trim()) {
+      alert('Veuillez remplir tous les champs obligatoires (Nom de la banque, Numéro de compte, Titulaire)');
+      return;
+    }
+    
     addBankAccount(formData);
     setShowAddModal(false);
     resetForm();
@@ -50,6 +50,12 @@ const BankModule: React.FC = () => {
 
   const handleEdit = () => {
     if (selectedBank) {
+      // Validation des champs obligatoires
+      if (!formData.bankName.trim() || !formData.accountNumber.trim() || !formData.accountHolder.trim()) {
+        alert('Veuillez remplir tous les champs obligatoires (Nom de la banque, Numéro de compte, Titulaire)');
+        return;
+      }
+      
       updateBankAccount(selectedBank.id, formData);
       setShowEditModal(false);
       setSelectedBank(null);
@@ -71,7 +77,7 @@ const BankModule: React.FC = () => {
     setFormData({
       bankName: '',
       accountNumber: '',
-      accountHolder: 'EDIBA INTER SARL U',
+      accountHolder: '',
       accountType: 'Professionnel',
       currency: 'FCFA',
       swiftCode: '',
@@ -80,7 +86,7 @@ const BankModule: React.FC = () => {
       address: '',
       phone: '',
       email: '',
-      isDefault: false,
+      isDefault: safeBankAccounts.length === 0, // Premier compte par défaut
       isActive: true
     });
   };
@@ -143,9 +149,28 @@ const BankModule: React.FC = () => {
         </div>
       </div>
 
+      {/* Message si aucun compte */}
+      {safeBankAccounts.length === 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+          <Building2 className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Aucun compte bancaire enregistré</h3>
+          <p className="text-blue-600 mb-4">
+            Commencez par ajouter vos informations bancaires pour les utiliser dans vos documents.
+          </p>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Ajouter mon premier compte bancaire
+          </button>
+        </div>
+      )}
+
       {/* Liste des comptes bancaires */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBanks.map((bank) => (
+      {safeBankAccounts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredBanks.map((bank) => (
           <div
             key={bank.id}
             className={`bg-white rounded-lg shadow-sm border-2 p-6 transition-all hover:shadow-md ${
@@ -237,7 +262,8 @@ const BankModule: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Modal d'ajout */}
       {showAddModal && (
