@@ -99,6 +99,25 @@ export interface Client {
   nombreFactures: number;
 }
 
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  accountType: 'Courant' | 'Épargne' | 'Professionnel' | 'Autre';
+  currency: string;
+  swiftCode?: string;
+  iban?: string;
+  branchCode?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Discharge {
   id: string;
   prestataire: string;
@@ -196,6 +215,7 @@ export interface DataState {
   clients: Client[];
   discharges: Discharge[];
   contractOrders: ContractOrder[];
+  bankAccounts: BankAccount[];
   // Répertoire d'articles global
   articlesDirectory: { id: string; name: string; description?: string; unitPrice?: number }[];
   // Nouveau système d'articles avec catégories hiérarchiques
@@ -240,6 +260,11 @@ export interface DataState {
   addContractOrder: (contractOrder: Omit<ContractOrder, 'id' | 'dateCreation'>) => ContractOrder;
   updateContractOrder: (id: string, contractOrder: Partial<ContractOrder>) => void;
   deleteContractOrder: (id: string) => void;
+  // Fonctions de gestion des comptes bancaires
+  addBankAccount: (bankAccount: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>) => BankAccount;
+  updateBankAccount: (id: string, bankAccount: Partial<BankAccount>) => void;
+  deleteBankAccount: (id: string) => void;
+  setDefaultBankAccount: (id: string) => void;
   // Workflow intégré
   validateQuote: (quoteId: string) => CustomerDocument;
   createOrderFromQuote: (quoteId: string, orderNumber: string, contractTerms?: CustomerDocument['contractTerms']) => CustomerDocument;
@@ -284,6 +309,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clients: [],
     discharges: [],
     contractOrders: [],
+    bankAccounts: [
+      {
+        id: 'bank-1',
+        bankName: 'BIA-TOGO POUR CECA',
+        accountNumber: 'TG005 01251 00115511401-48',
+        accountHolder: 'EDIBA INTER SARL U',
+        accountType: 'Professionnel',
+        currency: 'FCFA',
+        swiftCode: 'BIAFTGLX',
+        iban: 'TG005012510011551140148',
+        branchCode: '001',
+        address: 'Lomé, Togo',
+        phone: '+228 22 21 21 21',
+        email: 'contact@biatogo.tg',
+        isDefault: true,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ],
     articlesDirectory: [],
     articleCategories: [],
     articleLots: [],
@@ -320,6 +365,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     addContractOrder: () => { console.warn('addContractOrder not implemented'); return {} as any; },
     updateContractOrder: () => { console.warn('updateContractOrder not implemented'); },
     deleteContractOrder: () => { console.warn('deleteContractOrder not implemented'); },
+    // Fonctions de gestion des comptes bancaires
+    addBankAccount: () => { console.warn('addBankAccount not implemented'); return {} as any; },
+    updateBankAccount: () => { console.warn('updateBankAccount not implemented'); },
+    deleteBankAccount: () => { console.warn('deleteBankAccount not implemented'); },
+    setDefaultBankAccount: () => { console.warn('setDefaultBankAccount not implemented'); },
     validateQuote: () => { console.warn('validateQuote not implemented'); return {} as any; },
     createOrderFromQuote: () => { console.warn('createOrderFromQuote not implemented'); return {} as any; },
     createDeliveryFromOrder: () => { console.warn('createDeliveryFromOrder not implemented'); return {} as any; },
@@ -337,13 +387,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clients: state.clients,
       discharges: state.discharges,
       contractOrders: state.contractOrders,
+      bankAccounts: state.bankAccounts,
       articlesDirectory: state.articlesDirectory,
       articleCategories: state.articleCategories,
       articleLots: state.articleLots,
       articles: state.articles
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
-  }, [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);
+  }, [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.bankAccounts, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);
 
   useEffect(() => {
     try {
@@ -2295,6 +2346,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           clients: hasDefaultClients ? existingClients : [...defaultClients, ...existingClients],
           discharges: parsed.discharges || [],
           contractOrders: parsed.contractOrders || [],
+          bankAccounts: parsed.bankAccounts || [
+            {
+              id: 'bank-1',
+              bankName: 'BIA-TOGO POUR CECA',
+              accountNumber: 'TG005 01251 00115511401-48',
+              accountHolder: 'EDIBA INTER SARL U',
+              accountType: 'Professionnel',
+              currency: 'FCFA',
+              swiftCode: 'BIAFTGLX',
+              iban: 'TG005012510011551140148',
+              branchCode: '001',
+              address: 'Lomé, Togo',
+              phone: '+228 22 21 21 21',
+              email: 'contact@biatogo.tg',
+              isDefault: true,
+              isActive: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ],
           articlesDirectory: (parsed.articlesDirectory && parsed.articlesDirectory.length > 0) ? parsed.articlesDirectory : [
             { id: 'ART-DIR-1', name: 'Toner' },
             { id: 'ART-DIR-2', name: 'PC' },
@@ -2744,6 +2815,47 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setState(st => ({
         ...st,
         contractOrders: st.contractOrders.filter(co => co.id !== id)
+      }));
+    },
+    // Implémentations des fonctions bancaires
+    addBankAccount: (bankAccountInput) => {
+      const id = `bank-${Date.now()}`;
+      const bankAccount: BankAccount = {
+        ...bankAccountInput,
+        id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      setState(st => ({
+        ...st,
+        bankAccounts: [...st.bankAccounts, bankAccount]
+      }));
+      return bankAccount;
+    },
+    updateBankAccount: (id, bankAccountInput) => {
+      setState(st => ({
+        ...st,
+        bankAccounts: st.bankAccounts.map(ba => 
+          ba.id === id 
+            ? { ...ba, ...bankAccountInput, updatedAt: new Date().toISOString() }
+            : ba
+        )
+      }));
+    },
+    deleteBankAccount: (id) => {
+      setState(st => ({
+        ...st,
+        bankAccounts: st.bankAccounts.filter(ba => ba.id !== id)
+      }));
+    },
+    setDefaultBankAccount: (id) => {
+      setState(st => ({
+        ...st,
+        bankAccounts: st.bankAccounts.map(ba => ({
+          ...ba,
+          isDefault: ba.id === id,
+          updatedAt: new Date().toISOString()
+        }))
       }));
     }
   }), [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);

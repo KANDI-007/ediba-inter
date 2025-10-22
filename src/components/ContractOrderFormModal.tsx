@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, FileText } from 'lucide-react';
+import { useData } from '../contexts/DataContext';
 
 interface ContractOrderFormModalProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
   onSave,
   type
 }) => {
+  const { bankAccounts } = useData();
   const [formData, setFormData] = useState<ContractOrderData>({
     documentType: type,
     documentNumber: '', // Sera généré automatiquement
@@ -67,8 +69,8 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
     warrantyPeriod: 12, // 12 mois par défaut
     warrantyRetention: 5,
     performanceGuarantee: 5, // 5% par défaut
-    bankAccount: 'TG005 01251 00115511401-48',
-    bankName: 'BIA-TOGO POUR CECA',
+    bankAccount: bankAccounts.find(ba => ba.isDefault)?.accountNumber || 'TG005 01251 00115511401-48',
+    bankName: bankAccounts.find(ba => ba.isDefault)?.bankName || 'BIA-TOGO POUR CECA',
     budgetAllocation: 'Budget de l\'État, Gestion 2024',
     depositAccount: '1173',
     depositAccountTitle: 'FACT-REGIONS',
@@ -503,12 +505,26 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Compte bancaire
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.bankAccount}
-                    onChange={(e) => handleInputChange('bankAccount', e.target.value)}
+                    onChange={(e) => {
+                      const selectedBank = bankAccounts.find(ba => ba.accountNumber === e.target.value);
+                      if (selectedBank) {
+                        setFormData(prev => ({
+                          ...prev,
+                          bankAccount: selectedBank.accountNumber,
+                          bankName: selectedBank.bankName
+                        }));
+                      }
+                    }}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  />
+                  >
+                    {bankAccounts.map((bank) => (
+                      <option key={bank.id} value={bank.accountNumber}>
+                        {bank.bankName} - {bank.accountNumber} {bank.isDefault ? '(Par défaut)' : ''}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -517,8 +533,8 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <input
                     type="text"
                     value={formData.bankName}
-                    onChange={(e) => handleInputChange('bankName', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    readOnly
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100"
                   />
                 </div>
               </div>
