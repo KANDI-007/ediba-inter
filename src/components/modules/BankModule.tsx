@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2, Star, StarOff, Building2, CreditCard, MapPin, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { BankAccount } from '../../contexts/DataContext';
@@ -12,7 +12,8 @@ const BankModule: React.FC = () => {
   const [selectedBank, setSelectedBank] = useState<BankAccount | null>(null);
   
   // Vérification de sécurité - permettre le fonctionnement même sans données
-  const safeBankAccounts = bankAccounts || [];
+  // Utiliser useMemo pour que safeBankAccounts se mette à jour quand bankAccounts change
+  const safeBankAccounts = React.useMemo(() => bankAccounts || [], [bankAccounts]);
   
   const [formData, setFormData] = useState<Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>>({
     bankName: '',
@@ -30,11 +31,12 @@ const BankModule: React.FC = () => {
     isActive: true
   });
 
-  const filteredBanks = safeBankAccounts?.filter(bank =>
-    bank.bankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bank.accountNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bank.accountHolder.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredBanks = useMemo(() => 
+    safeBankAccounts.filter(bank =>
+      bank.bankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bank.accountNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bank.accountHolder.toLowerCase().includes(searchTerm.toLowerCase())
+    ), [safeBankAccounts, searchTerm]);
 
   const handleAdd = () => {
     // Validation des champs obligatoires
