@@ -5,6 +5,17 @@ import { BankAccount } from '../../contexts/DataContext';
 
 const BankModule: React.FC = () => {
   const { bankAccounts, addBankAccount, updateBankAccount, deleteBankAccount, setDefaultBankAccount } = useData();
+  
+  // Vérification de sécurité
+  if (!bankAccounts) {
+    return (
+      <div className="p-6 bg-red-100 border border-red-400 rounded-lg">
+        <h2 className="text-xl font-bold text-red-800">Erreur Module Banque</h2>
+        <p className="text-red-700">Les données bancaires ne sont pas disponibles</p>
+      </div>
+    );
+  }
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -25,11 +36,11 @@ const BankModule: React.FC = () => {
     isActive: true
   });
 
-  const filteredBanks = bankAccounts.filter(bank =>
+  const filteredBanks = bankAccounts?.filter(bank =>
     bank.bankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     bank.accountNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     bank.accountHolder.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) || [];
 
   const handleAdd = () => {
     addBankAccount(formData);

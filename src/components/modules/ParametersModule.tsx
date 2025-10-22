@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Building2, Save, CreditCard } from 'lucide-react';
 import BankModule from './BankModule';
+import BankModuleTest from './BankModuleTest';
+import BankModuleSimple from './BankModuleSimple';
 
 type CompanyDetails = {
   companyName: string;
