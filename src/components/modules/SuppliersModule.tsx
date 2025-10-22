@@ -20,7 +20,7 @@ import { useData } from '../../contexts/DataContext';
 
 const SuppliersModule: React.FC = () => {
   console.log('SuppliersModule - Component rendering');
-  const { addSupplierInvoice, suppliersList: contextSuppliers, addSupplier } = useData();
+  const { addSupplierInvoice, suppliersList: contextSuppliers, addSupplier, deleteSupplier } = useData();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -193,8 +193,14 @@ const SuppliersModule: React.FC = () => {
   };
 
   const handleDeleteSupplier = (id: string) => {
-    // Cette fonction devrait être implémentée dans le DataContext
-    console.log('Deleted supplier:', id);
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?')) {
+      try {
+        deleteSupplier(id);
+        alert('Fournisseur supprimé avec succès !');
+      } catch (error) {
+        alert('Erreur lors de la suppression du fournisseur');
+      }
+    }
   };
 
   return (

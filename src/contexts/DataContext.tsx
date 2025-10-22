@@ -209,6 +209,7 @@ export interface DataState {
   deleteSupplier: (id: string) => void;
   addSupplierInvoice: (inv: Omit<SupplierInvoice, 'id'>) => SupplierInvoice;
   updateDocument: (id: string, partial: Partial<CustomerDocument>) => void;
+  deleteDocument: (id: string) => void;
   addSupplierArticle: (supplierId: string, article: Omit<SupplierArticle, 'id'>) => SupplierArticle;
   updateSupplierArticle: (supplierId: string, articleId: string, partial: Partial<SupplierArticle>) => void;
   deleteSupplierArticle: (supplierId: string, articleId: string) => void;
@@ -294,6 +295,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     deleteSupplier: () => { console.warn('deleteSupplier not implemented'); },
     addSupplierInvoice: () => { console.warn('addSupplierInvoice not implemented'); return {} as any; },
     updateDocument: () => { console.warn('updateDocument not implemented'); },
+    deleteDocument: () => { console.warn('deleteDocument not implemented'); },
     addSupplierArticle: () => { console.warn('addSupplierArticle not implemented'); return {} as any; },
     updateSupplierArticle: () => { console.warn('updateSupplierArticle not implemented'); },
     deleteSupplierArticle: () => { console.warn('deleteSupplierArticle not implemented'); },
@@ -2411,6 +2413,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     updateDocument: (id, partial) => {
       setState(st => ({ ...st, documents: st.documents.map(d => d.id === id ? { ...d, ...partial } : d) }));
+    },
+    deleteDocument: (id) => {
+      setState(st => ({
+        ...st,
+        documents: st.documents.filter(d => d.id !== id)
+      }));
     },
     addSupplierArticle: (supplierId, articleInput) => {
       const article: SupplierArticle = { id: `ART-${Date.now()}`, ...articleInput };

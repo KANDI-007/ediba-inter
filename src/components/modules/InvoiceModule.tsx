@@ -53,7 +53,7 @@ const InvoiceModule: React.FC = () => {
     addContractOrder,
     updateContractOrder
   } = useData();
-  const { updateDocument } = useData() as any;
+  const { updateDocument, deleteDocument } = useData() as any;
   const { logCreate, logUpdate, logView, logExport } = useActivityLogger();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -928,8 +928,13 @@ const InvoiceModule: React.FC = () => {
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                       onClick={() => {
                         if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
-                          // Ici on pourrait ajouter une fonction de suppression dans le contexte
-                          alert('Fonction de suppression à implémenter dans le contexte de données');
+                          try {
+                            deleteDocument(invoice.id);
+                            logDelete('Documents', `Document ${invoice.id}`, invoice.id);
+                            alert('Document supprimé avec succès !');
+                          } catch (error) {
+                            alert('Erreur lors de la suppression du document');
+                          }
                         }
                       }}
                     >
