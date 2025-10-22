@@ -2832,7 +2832,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     // Implémentations des fonctions bancaires
     addBankAccount: (bankAccountInput) => {
-      console.log('🔄 DataContext: Ajout du compte bancaire:', bankAccountInput);
       const id = `bank-${Date.now()}`;
       const bankAccount: BankAccount = {
         ...bankAccountInput,
@@ -2840,16 +2839,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      console.log('🔄 DataContext: Compte bancaire créé:', bankAccount);
-      setState(st => {
-        const newState = {
-          ...st,
-          bankAccounts: [...st.bankAccounts, bankAccount]
-        };
-        console.log('🔄 DataContext: Nouvel état avec compte bancaire:', newState.bankAccounts);
-        return newState;
-      });
-      console.log('✅ DataContext: Compte bancaire ajouté avec succès');
+      setState(st => ({
+        ...st,
+        bankAccounts: [...st.bankAccounts, bankAccount]
+      }));
       return bankAccount;
     },
     updateBankAccount: (id, bankAccountInput) => {
