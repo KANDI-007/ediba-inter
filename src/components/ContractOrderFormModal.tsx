@@ -69,8 +69,8 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
     warrantyPeriod: 12, // 12 mois par défaut
     warrantyRetention: 5,
     performanceGuarantee: 5, // 5% par défaut
-    bankAccount: bankAccounts.find(ba => ba.isDefault)?.accountNumber || 'TG005 01251 00115511401-48',
-    bankName: bankAccounts.find(ba => ba.isDefault)?.bankName || 'BIA-TOGO POUR CECA',
+    bankAccount: bankAccounts?.find(ba => ba.isDefault)?.accountNumber || 'TG005 01251 00115511401-48',
+    bankName: bankAccounts?.find(ba => ba.isDefault)?.bankName || 'BIA-TOGO POUR CECA',
     budgetAllocation: 'Budget de l\'État, Gestion 2024',
     depositAccount: '1173',
     depositAccountTitle: 'FACT-REGIONS',
@@ -508,7 +508,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <select
                     value={formData.bankAccount}
                     onChange={(e) => {
-                      const selectedBank = bankAccounts.find(ba => ba.accountNumber === e.target.value);
+                      const selectedBank = bankAccounts?.find(ba => ba.accountNumber === e.target.value);
                       if (selectedBank) {
                         setFormData(prev => ({
                           ...prev,
@@ -519,7 +519,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     }}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   >
-                    {bankAccounts.map((bank) => (
+                    {bankAccounts?.map((bank) => (
                       <option key={bank.id} value={bank.accountNumber}>
                         {bank.bankName} - {bank.accountNumber} {bank.isDefault ? '(Par défaut)' : ''}
                       </option>
