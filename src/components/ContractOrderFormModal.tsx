@@ -45,7 +45,6 @@ export interface ContractOrderData {
   // Informations de l'autorité contractante (renommé)
   contractingAuthority: string; // Renommé de issuingAuthority
   country: string;
-  motto: string;
 }
 
 const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
@@ -77,8 +76,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
     lotDescription: '', // Non obligatoire
     executionPeriod: 15,
     contractingAuthority: 'MINISTERE DE L\'ADMINISTRATION TERRITORIALE, DE LA DECENTRALISATION ET DU DEVELOPPEMENT DES TERRITOIRES',
-    country: 'REPUBLIQUE TOGOLAISE',
-    motto: 'Travail - Liberté - Patrie'
+    country: 'REPUBLIQUE TOGOLAISE'
   });
 
   const handleInputChange = (field: keyof ContractOrderData, value: string | number) => {
@@ -647,17 +645,6 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                       </option>
                     ))}
                   </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Devise
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.motto}
-                    onChange={(e) => handleInputChange('motto', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  />
                 </div>
               </div>
             </div>
