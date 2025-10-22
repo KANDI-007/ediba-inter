@@ -155,11 +155,13 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         setWebsocketUrl('http://localhost:3001');
       } else if (hostname.includes('netlify.app')) {
         setEnvironment('production');
-        // URL du serveur WebSocket de production (à configurer)
-        setWebsocketUrl('https://ediba-inter-websocket.herokuapp.com');
+        // URL du serveur WebSocket de production (Railway)
+        const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://ediba-inter-production.up.railway.app';
+        setWebsocketUrl(productionUrl);
       } else {
         setEnvironment('production');
-        setWebsocketUrl('https://ediba-inter-websocket.herokuapp.com');
+        const productionUrl = import.meta.env.VITE_WEBSOCKET_URL || 'https://ediba-inter-production.up.railway.app';
+        setWebsocketUrl(productionUrl);
       }
       
       console.log(`🌐 Environnement détecté: ${environment}`);

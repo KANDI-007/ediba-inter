@@ -1,6 +1,6 @@
 // Module Chat Espace EDIBA avec design personnalisé
 import React, { useState, useEffect } from 'react';
-import { useChat } from '../../contexts/ChatContextSimple';
+import { useChat } from '../../contexts/ChatContextProduction';
 import { useAuth } from '../../contexts/AuthContext';
 import EspaceEdibaChat from '../EspaceEdibaChat';
 
