@@ -1,0 +1,3 @@
+Force rebuild - Netlify deployment
+Date: 2025-01-26
+Reason: Module bulletins de paie et images
