@@ -408,8 +408,9 @@
   transform: translateY(-1px);
 }
 
-/* Responsive Design */
+/* Responsive Design - Mobile First Approach */
 @media (max-width: 768px) {
+  /* Mobile Sidebar */
   .mobile-sidebar {
     position: fixed;
     top: 0;
@@ -433,6 +434,149 @@
     height: 100vh;
     background: rgba(0, 0, 0, 0.5);
     z-index: 40;
+  }
+
+  /* Mobile Optimization */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth scrolling on mobile */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Mobile friendly buttons */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Optimize images for mobile */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Mobile chat interface */
+  .chat-interface {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .chat-sidebar {
+    width: 100%;
+    height: 100vh;
+  }
+
+  .chat-conversation {
+    height: calc(100vh - 140px);
+  }
+
+  /* Message bubbles responsive */
+  .message-bubble {
+    max-width: 85%;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  /* Mobile tables */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile cards */
+  .card {
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Mobile forms */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  input, textarea, select {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  /* Mobile navigation */
+  .lg\:hidden {
+    display: block !important;
+  }
+
+  .lg\:block {
+    display: none !important;
+  }
+
+  /* Mobile padding adjustments */
+  .px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .py-6 {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  /* Mobile text sizing */
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    max-width: 95%;
+  }
+
+  .lg\:hidden {
+    display: none !important;
+  }
+
+  .lg\:block {
+    display: block !important;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1025px) {
+  .container {
+    max-width: 1280px;
+  }
+
+  /* Smooth animations for larger screens */
+  * {
+    transition: all 0.2s ease;
   }
 }
 

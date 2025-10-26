@@ -172,6 +172,65 @@ export class NotificationManager {
     }
   }
 
+  // Envoyer une notification de message
+  public async sendMessageNotification(messageData: {
+    senderName: string;
+    content: string;
+    conversationId: string;
+  }): Promise<void> {
+    console.log('💬 Tentative d\'envoi de notification de message:', messageData);
+    
+    if (this.permission !== 'granted') {
+      console.log('🔔 Permission non accordée, demande...');
+      const granted = await this.requestPermission();
+      if (!granted) {
+        console.log('🔔 Permission refusée, notification impossible');
+        return;
+      }
+    }
+
+    if (!this.serviceWorkerRegistration) {
+      console.error('❌ Service Worker non enregistré');
+      console.log('🔧 Tentative de réenregistrement...');
+      await this.registerServiceWorker();
+      
+      if (!this.serviceWorkerRegistration) {
+        console.error('❌ Impossible d\'enregistrer le Service Worker');
+        return;
+      }
+    }
+
+    try {
+      const notificationData = {
+        title: `Nouveau message de ${messageData.senderName}`,
+        body: messageData.content,
+        icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNUMyRkYiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMiAyYy44MSAwIDEuNTQgLjY5IDEuNSAxLjVsLTEgMTJhMiAyIDAgMCAxLTIgMS44MkgxNi41YTEuNSAxLjUgMCAwIDAgMCAzSDExYTEuNSAxLjUgMCAwIDAgMCAzaC01YTcuMSg3MSA3MSAwIDAgMCA3LTdoM1ZhNC40IDQuNCAwIDAgMCAxLjctMy41TDE0IDcgMS44NyAyLjcxYy0uNC0uMzgtLjM1LS45NS4xMy0xLjMgLjQ2LS4zNSAxLjEyLS4yOCAxLjQ1LjIyTDUuNjMgMmgxNmEyIDIgMCAwIDEgMiAyVjJoMnoiLz4KPC9zdmc+Cjwvc3ZnPg==',
+        badge: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iOCIgZmlsbD0iIzI1QzJGRiIvPgo8c3ZnIHg9IjE4IiB5PSIxOCIgd2lkdGg9IjM2IiBoZWlnaHQ9IjM2IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KPHBhdGggZD0iTTIyIDJjLjgxIDAgMS41NC42OSAxLjUgMS41bC0xIDEyYTIgMiAwIDAgMS0yIDEuODJIMTYuNWExLjUgMS41IDAgMCAwIDAgM0gxMWExLjUgMS41IDAgMCAwIDAgM2gtNWM0LjEyIDAgNy0xLjkgNy01VjEycS41LjggMiAyIDIuNjUgMi4yIDcgMWg1YTIgMiAwIDAgMCAwLTJoLTJWNmg4YTQgNCAwIDAgMCAxIDEuMDhsMS43NiAyLjY0Yy4xNC4yMS4yLjQ0LjE2LjY3YS45NS45NSAwIDAgMS0uNzkuMTRMMTQuMDA4IDExSDEyVjloMkExLjUgMS41IDAgMCAwIDEzLjUgNGg0QTQuNSA0LjUgMCAwIDEgMjIgOXYxaDJ6Ii8+Cjwvc3ZnPgo8L3N2Zz4K',
+        tag: `ediba-message-${messageData.conversationId}`,
+        requireInteraction: false,
+        data: {
+          conversationId: messageData.conversationId,
+          senderName: messageData.senderName,
+          url: '/chat',
+          timestamp: Date.now()
+        }
+      };
+
+      console.log('💬 Données de notification:', notificationData);
+      console.log('💬 Service Worker registration:', this.serviceWorkerRegistration);
+      
+      await this.serviceWorkerRegistration.showNotification(
+        notificationData.title,
+        notificationData
+      );
+      
+      console.log('✅ Notification de message envoyée avec succès');
+    } catch (error) {
+      console.error('❌ Erreur envoi notification de message:', error);
+      console.error('❌ Détails de l\'erreur:', error.message);
+    }
+  }
+
   // Gérer les messages du service worker
   private handleServiceWorkerMessage(data: any): void {
     console.log('💬 Traitement message Service Worker:', data);

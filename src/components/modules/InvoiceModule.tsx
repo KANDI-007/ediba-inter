@@ -87,6 +87,7 @@ const InvoiceModule: React.FC = () => {
   const [selectedContractOrder, setSelectedContractOrder] = useState<ContractOrderData | null>(null);
   const [showContractOrderView, setShowContractOrderView] = useState(false);
   const [selectedContractOrderForView, setSelectedContractOrderForView] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Fonctions de gestion du nouveau processus
   const handleContractOrderSelection = (type: 'contract' | 'order') => {
@@ -353,6 +354,19 @@ const InvoiceModule: React.FC = () => {
   const handleViewWorkflow = (documentId: string) => {
     setSelectedWorkflowDocument(documentId);
     setShowWorkflowViewer(true);
+  };
+
+  // Fonction de suppression d'une facture
+  const handleDeleteInvoice = (invoiceId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
+      try {
+        deleteDocument(invoiceId);
+        logUpdate('Facturation', `Facture ${invoiceId} supprimée`, invoiceId);
+        alert('Facture supprimée avec succès !');
+      } catch (error) {
+        alert('Erreur lors de la suppression de la facture');
+      }
+    }
   };
 
   // Gestion de la sélection d'articles
@@ -683,6 +697,29 @@ const InvoiceModule: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
+              {/* Boutons de vue */}
+              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                <button 
+                  onClick={() => setViewMode('cards')}
+                  className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                    viewMode === 'cards' 
+                      ? 'bg-sky-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Cartes
+                </button>
+                <button 
+                  onClick={() => setViewMode('table')}
+                  className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                    viewMode === 'table' 
+                      ? 'bg-sky-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Tableau
+                </button>
+              </div>
               <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                 <Filter className="w-4 h-4 mr-2" />
                 Filtres
@@ -695,7 +732,112 @@ const InvoiceModule: React.FC = () => {
           </div>
         </div>
 
-        {/* Liste des documents */}
+        {/* Vue Tableau */}
+        {viewMode === 'table' && (
+          <div className="overflow-x-auto mt-4">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Numéro
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    NIF
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Montant HT
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Montant TTC
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    État exécution
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    État de paiement
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredInvoices.map((invoice) => (
+                  <tr key={invoice.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {invoice.documentNumber || invoice.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {invoice.client}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {(() => {
+                        const clientData = clients.find(c => c.raisonSociale === invoice.client);
+                        return clientData?.nif || 'N/A';
+                      })()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(invoice.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {invoice.amountHT?.toFixed(2) || '0.00'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {invoice.amountTTC?.toFixed(2) || '0.00'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
+                        {getStatusText(invoice.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        {invoice.paymentStatus || 'Non payé'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            setSelectedDocument(invoice);
+                            setShowViewModal(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedDocument(invoice);
+                            setShowEditModal(true);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteInvoice(invoice.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Vue Cartes */}
+        {viewMode === 'cards' && (
         <div className="divide-y divide-gray-200">
           {filteredInvoices.map((invoice) => (
             <div key={invoice.id} className="p-6 hover:bg-gray-50 transition-colors duration-200">
@@ -718,6 +860,13 @@ const InvoiceModule: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-1">{invoice.client}</p>
+                  {/* Affichage du NIF du client */}
+                  {(() => {
+                    const clientData = clients.find(c => c.raisonSociale === invoice.client);
+                    return clientData?.nif ? (
+                      <p className="text-xs text-gray-500 mb-1">NIF: {clientData.nif}</p>
+                    ) : null;
+                  })()}
                   {invoice.isContractOrder && invoice.contractOrderData && (
                     <div className="text-xs text-gray-500 mb-1">
                       <div>N°: {invoice.contractOrderData.documentNumber}</div>
@@ -1065,6 +1214,7 @@ const InvoiceModule: React.FC = () => {
             </div>
           ))}
         </div>
+        )}
 
         {filteredInvoices.length === 0 && (
           <div className="p-12 text-center">
