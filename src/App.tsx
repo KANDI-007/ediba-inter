@@ -19,6 +19,7 @@ import ActivityLogModuleModern from './components/modules/ActivityLogModuleModer
 import ParametersModule from './components/modules/ParametersModule';
 import ArticlesModule from './components/modules/ArticlesModule';
 import UsersModule from './components/modules/UsersModule';
+import PayrollModule from './components/modules/PayrollModule';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { ActivityProvider } from './contexts/ActivityContext';
@@ -224,6 +225,10 @@ function AppContent() {
           <Route 
             path="/chat" 
             element={isAuthenticated ? <Layout><ChatModule /></Layout> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/payroll" 
+            element={isAuthenticated ? <Layout><PayrollModule /></Layout> : <Navigate to="/login" />} 
           />
           <Route 
             path="/invoice-proforma" 

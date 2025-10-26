@@ -67,6 +67,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       title: 'Administration',
       items: [
         { name: 'Utilisateurs', href: '/users', icon: Users, permission: 'users.manage' },
+        { name: 'Bulletins de Paie', href: '/payroll', icon: FileText, permission: 'payroll.view' },
         { name: 'Décharges', href: '/discharge', icon: FileCheck, permission: 'discharges.view' },
         { name: 'Exercices Fiscaux', href: '/fiscal-years', icon: Calendar, permission: 'fiscal.manage' },
       ]
