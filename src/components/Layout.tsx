@@ -107,9 +107,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar mobile */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl h-full">
+      <div className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div 
+          className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity duration-300" 
+          onClick={() => setSidebarOpen(false)}
+        />
+        <div className={`fixed inset-y-0 left-0 flex w-72 sm:w-80 flex-col bg-white shadow-2xl h-full transform transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           {/* Header mobile avec style premium */}
           <div className="relative flex h-20 items-center justify-between px-4 bg-gradient-to-br from-brand-blue via-blue-600 to-brand-green flex-shrink-0 overflow-hidden">
             {/* Effet de fond décoratif */}
@@ -317,60 +320,84 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-14 sm:h-16 items-center gap-x-2 sm:gap-x-4 border-b border-gray-200 bg-white px-3 sm:px-4 shadow-sm sm:px-6 lg:px-8">
           <button
             type="button"
-            className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+            className="-m-2.5 p-2.5 text-gray-700 lg:hidden touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setSidebarOpen(true)}
+            aria-label="Ouvrir le menu"
           >
             <Menu className="h-6 w-6" />
           </button>
           
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <h1 className="text-lg font-semibold text-gray-900">
+          <div className="flex flex-1 gap-x-2 sm:gap-x-4 self-stretch lg:gap-x-6 items-center">
+            <div className="flex items-center gap-x-2 sm:gap-x-4 lg:gap-x-6 flex-1 min-w-0">
+              <h1 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                 {getCurrentPageName()}
               </h1>
             </div>
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
+            <div className="flex items-center gap-x-2 sm:gap-x-4 lg:gap-x-6">
               {/* Bouton de notifications */}
               <button
                 onClick={() => setNotificationPanelOpen(true)}
-                className="relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded-lg"
+                className="relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded-lg touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
                 {getUnreadCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
                     {getUnreadCount() > 9 ? '9+' : getUnreadCount()}
                   </span>
                 )}
               </button>
               
               {/* Profil utilisateur */}
-              <UserProfileHeader
-                user={{
-                  id: user?.id || '1',
-                  username: user?.username || 'utilisateur',
-                  fullName: user?.fullName || user?.username || 'Utilisateur',
-                  email: user?.email || 'user@ediba.com',
-                  role: user?.role || 'utilisateur',
-                  avatar: user?.avatar,
-                  profileImage: user?.profileImage,
-                  phone: user?.phone,
-                  address: user?.address,
-                  joinDate: user?.joinDate,
-                  lastLogin: user?.lastLogin
-                }}
-                onLogout={logout}
-                onUpdateProfile={updateUserProfile}
-              />
+              <div className="hidden sm:block">
+                <UserProfileHeader
+                  user={{
+                    id: user?.id || '1',
+                    username: user?.username || 'utilisateur',
+                    fullName: user?.fullName || user?.username || 'Utilisateur',
+                    email: user?.email || 'user@ediba.com',
+                    role: user?.role || 'utilisateur',
+                    avatar: user?.avatar,
+                    profileImage: user?.profileImage,
+                    phone: user?.phone,
+                    address: user?.address,
+                    joinDate: user?.joinDate,
+                    lastLogin: user?.lastLogin
+                  }}
+                  onLogout={logout}
+                  onUpdateProfile={updateUserProfile}
+                />
+              </div>
+              {/* Version mobile simplifiée */}
+              <div className="sm:hidden">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="relative p-1.5 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  aria-label="Menu profil"
+                >
+                  {user?.profileImage || user?.avatar ? (
+                    <img
+                      src={user.profileImage || user.avatar}
+                      alt={user.fullName || user.username}
+                      className="w-8 h-8 rounded-full border-2 border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white text-sm font-semibold">
+                      {(user?.fullName || user?.username || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <main className="py-3 sm:py-6">
+          <div className="mx-auto max-w-7xl px-3 sm:px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>

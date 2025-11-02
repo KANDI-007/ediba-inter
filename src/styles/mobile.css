@@ -1,0 +1,696 @@
+/* ========================================
+   OPTIMISATIONS MOBILE - EDIBA INTER
+   Version mobile ultra-optimisée
+   ======================================== */
+
+/* Variables CSS pour mobile */
+:root {
+  --mobile-padding: 12px;
+  --mobile-gap: 8px;
+  --mobile-font-base: 14px;
+  --mobile-font-title: 18px;
+  --mobile-touch-target: 44px;
+  --mobile-border-radius: 12px;
+  --mobile-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   OPTIMISATIONS GLOBALES MOBILE
+   ======================================== */
+
+/* Empêcher le zoom sur input focus (iOS) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    /* Empêche le zoom automatique sur iOS */
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+  }
+
+  /* Améliorer le scroll sur mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  /* Smooth scrolling */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Optimisation des polices */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* ========================================
+   BOUTONS ET INTERACTIONS TACTILES
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Taille minimale pour les zones tactiles */
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: var(--mobile-touch-target);
+    min-width: var(--mobile-touch-target);
+    padding: 10px 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Boutons primaires optimisés */
+  .btn-primary,
+  .ediba-primary-button,
+  button[type="submit"] {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: var(--mobile-border-radius);
+    box-shadow: var(--mobile-shadow);
+  }
+
+  /* Boutons secondaires */
+  .btn-secondary,
+  .ediba-secondary-button {
+    font-size: 16px;
+    padding: 12px 20px;
+    border-radius: var(--mobile-border-radius);
+  }
+
+  /* Boutons d'icône */
+  button.icon-button {
+    min-width: var(--mobile-touch-target);
+    min-height: var(--mobile-touch-target);
+    padding: 10px;
+    border-radius: 8px;
+  }
+}
+
+/* ========================================
+   FORMULAIRES MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Groupes de formulaires */
+  .form-group,
+  .space-y-4 > div,
+  form > div {
+    margin-bottom: 20px;
+  }
+
+  /* Labels */
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    color: #374151;
+  }
+
+  /* Inputs */
+  input,
+  textarea,
+  select {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 2px solid #e5e7eb;
+    transition: all 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+  }
+
+  /* Textarea */
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  /* Select avec flèche personnalisée */
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 40px;
+  }
+
+  /* Champs de recherche */
+  input[type="search"] {
+    padding-left: 40px;
+    border-radius: 24px;
+  }
+
+  /* Checkbox et Radio */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    margin-right: 10px;
+    accent-color: #3b82f6;
+  }
+}
+
+/* ========================================
+   MODALS ET DIALOGS MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Overlay modal */
+  .modal-overlay,
+  [class*="fixed inset-0"][class*="z-50"] {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 0;
+  }
+
+  /* Conteneur modal */
+  .modal-content,
+  [class*="inline-block"][class*="bg-white"][class*="rounded"] {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Header modal */
+  .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px;
+    flex-shrink: 0;
+  }
+
+  /* Body modal */
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Footer modal */
+  .modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Bouton fermer */
+  button[aria-label*="fermer"],
+  button[aria-label*="close"],
+  [class*="X"] {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+}
+
+/* ========================================
+   TABLEAUX MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Conteneur de tableau responsive */
+  .table-responsive,
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  /* Tableau */
+  table {
+    min-width: 600px;
+    font-size: 14px;
+  }
+
+  /* En-têtes de tableau */
+  thead th {
+    position: sticky;
+    top: 0;
+    background: #f9fafb;
+    z-index: 5;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 8px;
+    white-space: nowrap;
+  }
+
+  /* Cellules */
+  tbody td {
+    padding: 12px 8px;
+    white-space: nowrap;
+  }
+
+  /* Indicateur de scroll horizontal */
+  .table-responsive::after {
+    content: '';
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+    pointer-events: none;
+  }
+}
+
+/* ========================================
+   CARTES ET CARDS MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .card,
+  .ediba-card,
+  [class*="bg-white"][class*="rounded"][class*="shadow"] {
+    margin-bottom: 12px;
+    padding: 16px;
+    border-radius: var(--mobile-border-radius);
+    box-shadow: var(--mobile-shadow);
+  }
+
+  /* Grille de cartes */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-cols-4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+/* ========================================
+   NAVIGATION MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Sidebar mobile */
+  .sidebar-mobile {
+    width: 85vw;
+    max-width: 320px;
+  }
+
+  /* Items de navigation */
+  nav a,
+  nav button {
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 8px;
+    padding: 0 16px;
+    margin: 0 -16px 20px;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    font-size: 14px;
+    white-space: nowrap;
+    border-radius: 20px;
+  }
+}
+
+/* ========================================
+   LISTES ET ÉLÉMENTS MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Listes */
+  ul,
+  ol {
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+
+  /* Divider */
+  hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  /* Badges */
+  .badge,
+  span[class*="bg-"],
+  span[class*="text-"] {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 12px;
+    display: inline-block;
+  }
+}
+
+/* ========================================
+   SPACING ET PADDING MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Padding réduit */
+  .px-4 {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .px-6 {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .py-6 {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .p-4 {
+    padding: 16px;
+  }
+
+  .p-6 {
+    padding: 16px;
+  }
+
+  /* Gap réduit */
+  .gap-4 {
+    gap: 12px;
+  }
+
+  .gap-6 {
+    gap: 16px;
+  }
+
+  /* Margin réduit */
+  .mb-4 {
+    margin-bottom: 16px;
+  }
+
+  .mb-6 {
+    margin-bottom: 20px;
+  }
+}
+
+/* ========================================
+   TYPOGRAPHIE MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 22px;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 20px;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    font-size: 18px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    font-size: 16px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  small {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+/* ========================================
+   FLOATING ACTION BUTTON (FAB)
+   ======================================== */
+
+@media (max-width: 768px) {
+  .fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .fab:hover,
+  .fab:active {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ========================================
+   BOTTOM NAVIGATION BAR
+   ======================================== */
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 30;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    min-height: 60px;
+    touch-action: manipulation;
+  }
+
+  .bottom-nav-item.active {
+    color: #3b82f6;
+  }
+}
+
+/* ========================================
+   SWIPE GESTURES
+   ======================================== */
+
+@media (max-width: 768px) {
+  .swipeable {
+    touch-action: pan-x;
+    user-select: none;
+  }
+
+  /* Feedback visuel au swipe */
+  .swipeable:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+}
+
+/* ========================================
+   LOADING STATES MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+
+  .skeleton {
+    border-radius: 8px;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-loading {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+}
+
+/* ========================================
+   SAFE AREA SUPPORT (iOS)
+   ======================================== */
+
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    .safe-top {
+      padding-top: max(12px, env(safe-area-inset-top));
+    }
+
+    .safe-bottom {
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .safe-left {
+      padding-left: max(16px, env(safe-area-inset-left));
+    }
+
+    .safe-right {
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* ========================================
+   PRINT OPTIMIZATION MOBILE
+   ======================================== */
+
+@media print {
+  @media (max-width: 768px) {
+    * {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    body {
+      font-size: 12pt;
+      line-height: 1.5;
+    }
+  }
+}
+
+/* ========================================
+   PERFORMANCE MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Réduire les animations sur mobile pour performance */
+  * {
+    will-change: auto;
+  }
+
+  /* Optimiser les transitions */
+  .transition-all {
+    transition-property: transform, opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+  }
+
+  /* Désactiver les animations si préféré */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+

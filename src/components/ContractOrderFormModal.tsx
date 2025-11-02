@@ -253,29 +253,45 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div className="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold flex items-center">
-              <FileText className="w-5 h-5 mr-2" />
-              {type === 'contract' ? 'Nouveau Contrat' : 'Nouvelle Lettre de Commande'}
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Overlay */}
+      <div 
+        className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity duration-300" 
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      
+      {/* Modal Container - Full screen sur mobile, centré sur desktop */}
+      <div className="fixed inset-0 sm:flex sm:items-center sm:justify-center sm:p-4 z-50">
+        <div
+          className="
+            bg-white w-full h-full sm:h-auto sm:w-full sm:max-w-4xl sm:max-h-[90vh] sm:rounded-2xl
+            shadow-2xl transform transition-all duration-300 flex flex-col
+          "
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header - Sticky sur mobile */}
+          <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-blue-500 to-purple-600 text-white flex-shrink-0 sm:rounded-t-2xl">
+            <h3 className="text-base sm:text-lg font-semibold flex items-center">
+              <FileText className="w-5 h-5 mr-2 flex-shrink-0" />
+              <span className="truncate">{type === 'contract' ? 'Nouveau Contrat' : 'Nouvelle Lettre de Commande'}</span>
             </h3>
             <button
               onClick={onClose}
-              className="text-white/80 hover:text-white text-2xl"
+              className="text-white/90 hover:text-white touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/20 transition-colors ml-3 flex-shrink-0"
+              aria-label="Fermer"
             >
-              <X size={20} />
+              <X className="h-6 w-6" />
             </button>
           </div>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
+          
+          {/* Body - Scrollable */}
+          <div className="flex-1 overflow-y-auto -webkit-overflow-scrolling-touch px-4 sm:px-6 py-4 sm:py-6">
+            <div className="space-y-4 sm:space-y-6">
             {/* Informations générales */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Informations générales</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Numéro du document (généré automatiquement)
@@ -285,13 +301,13 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                       type="text"
                       value={formData.documentNumber || generateDocumentNumber()}
                       onChange={(e) => handleInputChange('documentNumber', e.target.value)}
-                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                       placeholder="Sera généré automatiquement"
                     />
                     <button
                       type="button"
                       onClick={() => handleInputChange('documentNumber', generateDocumentNumber())}
-                      className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+                      className="px-3 sm:px-4 py-2.5 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm sm:text-base touch-manipulation min-h-[44px] font-medium"
                     >
                       Générer
                     </button>
@@ -305,7 +321,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="date"
                     value={formData.date}
                     onChange={(e) => handleInputChange('date', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -316,7 +332,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="text"
                     value={formData.authorizingReference}
                     onChange={(e) => handleInputChange('authorizingReference', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                     placeholder="Ex: Lettre n°1470/MEF/DNCCP/DSCP du 22 mai 2024"
                   />
                 </div>
@@ -326,7 +342,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
             {/* Informations de l'attributaire */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Informations de l'attributaire</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Attributaire
@@ -335,7 +351,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="text"
                     value={formData.awardee}
                     onChange={(e) => handleInputChange('awardee', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   />
                 </div>
                 <div>
@@ -346,7 +362,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="text"
                     value={formData.taxId}
                     onChange={(e) => handleInputChange('taxId', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   />
                 </div>
               </div>
@@ -355,7 +371,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
             {/* Informations financières */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Informations financières</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Choix du type de montant */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -396,7 +412,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="number"
                     value={formData.amountHT}
                     onChange={(e) => handleAmountChange(e.target.value, 'ht')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                     placeholder="0"
                   />
                 </div>
@@ -410,7 +426,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="number"
                     value={formData.amountTTC}
                     onChange={(e) => handleAmountChange(e.target.value, 'ttc')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                     placeholder="0"
                   />
                 </div>
@@ -423,7 +439,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <select
                     value={formData.warrantyPeriod}
                     onChange={(e) => handleInputChange('warrantyPeriod', parseInt(e.target.value))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   >
                     <option value={6}>6 mois</option>
                     <option value={12}>12 mois</option>
@@ -444,7 +460,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <select
                     value={formData.warrantyRetention}
                     onChange={(e) => handleInputChange('warrantyRetention', parseInt(e.target.value))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   >
                     <option value={0}>0%</option>
                     <option value={2}>2%</option>
@@ -465,7 +481,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <select
                     value={formData.performanceGuarantee}
                     onChange={(e) => handleInputChange('performanceGuarantee', parseInt(e.target.value))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   >
                     <option value={0}>0%</option>
                     <option value={2}>2%</option>
@@ -496,7 +512,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
             {/* Informations bancaires */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Informations bancaires</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Compte bancaire
@@ -513,7 +529,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                         }));
                       }
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   >
                     {bankAccounts?.map((bank) => (
                       <option key={bank.id} value={bank.accountNumber}>
@@ -568,7 +584,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="text"
                     value={formData.subject}
                     onChange={(e) => handleInputChange('subject', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   />
                 </div>
                 <div>
@@ -579,7 +595,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="text"
                     value={formData.lotDescription}
                     onChange={(e) => handleInputChange('lotDescription', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                     placeholder="Ex: Lot 2: MOBILIER DE BUREAUX DE BUREAUX AU PROFIT DU GOUVERNORAT DE LA KARA"
                   />
                 </div>
@@ -590,7 +606,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <select
                     value={formData.executionPeriod}
                     onChange={(e) => handleInputChange('executionPeriod', parseInt(e.target.value))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   >
                     <option value={0}>Immédiate</option>
                     <option value={7}>7 jours</option>
@@ -610,7 +626,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
             {/* Informations de l'autorité contractante */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Informations de l'autorité contractante</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Autorité contractante
@@ -619,7 +635,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                     type="text"
                     value={formData.contractingAuthority}
                     onChange={(e) => handleInputChange('contractingAuthority', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   />
                 </div>
                 <div>
@@ -629,7 +645,7 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                   <select
                     value={formData.country}
                     onChange={(e) => handleInputChange('country', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent touch-manipulation"
                   >
                     {countries.map((country) => (
                       <option key={country.code} value={country.name}>
@@ -640,23 +656,25 @@ const ContractOrderFormModal: React.FC<ContractOrderFormModalProps> = ({
                 </div>
               </div>
             </div>
+            </div>
           </div>
-        </div>
-        
-        <div className="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3 flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Annuler
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Enregistrer
-          </button>
+          
+          {/* Footer - Sticky sur mobile */}
+          <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 px-4 sm:px-6 py-4 sm:py-5 bg-gray-50 border-t border-gray-200 flex-shrink-0 sm:rounded-b-2xl">
+            <button
+              onClick={onClose}
+              className="px-4 sm:px-6 py-2.5 sm:py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors touch-manipulation min-h-[44px] font-medium text-sm sm:text-base"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 sm:px-6 py-2.5 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors touch-manipulation min-h-[44px] font-medium text-sm sm:text-base flex items-center justify-center"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Enregistrer
+            </button>
+          </div>
         </div>
       </div>
     </div>
