@@ -34,19 +34,61 @@ export async function captureElement(
 ): Promise<HTMLCanvasElement> {
   const config = { ...DEFAULT_PRINT_OPTIONS, ...options };
   
+  // Sauvegarder la position de scroll originale
+  const originalScrollTop = element.scrollTop;
+  const originalScrollLeft = element.scrollLeft;
+  
+  // Forcer le scroll en haut
+  element.scrollTop = 0;
+  element.scrollLeft = 0;
+  
+  // Attendre que le DOM soit rendu
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Obtenir les dimensions réelles
+  const contentWidth = element.scrollWidth || element.offsetWidth;
+  const contentHeight = element.scrollHeight || element.offsetHeight;
+  
   const canvas = await html2canvas(element, {
     scale: config.scale,
     useCORS: true,
     allowTaint: true,
     backgroundColor: config.includeBackground ? '#ffffff' : null,
     logging: false,
-    width: element.scrollWidth,
-    height: element.scrollHeight,
+    width: contentWidth,
+    height: contentHeight,
+    windowWidth: contentWidth,
+    windowHeight: contentHeight,
     scrollX: 0,
     scrollY: 0,
-    windowWidth: element.scrollWidth,
-    windowHeight: element.scrollHeight
+    onclone: (clonedDoc) => {
+      // S'assurer que tous les éléments sont visibles dans le clone
+      const clonedElement = clonedDoc.querySelector('[data-invoice-template]') || 
+                           clonedDoc.body.querySelector('div.print-container') ||
+                           element;
+      if (clonedElement) {
+        (clonedElement as HTMLElement).style.overflow = 'visible';
+        (clonedElement as HTMLElement).style.overflowY = 'visible';
+        (clonedElement as HTMLElement).style.height = 'auto';
+        (clonedElement as HTMLElement).style.maxHeight = 'none';
+      }
+      
+      // S'assurer que les sections totaux sont visibles
+      const totalsElements = clonedDoc.querySelectorAll('.invoice-totals, .print-no-break');
+      totalsElements.forEach((el: Element) => {
+        (el as HTMLElement).style.display = 'block';
+        (el as HTMLElement).style.visibility = 'visible';
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.position = 'relative';
+        (el as HTMLElement).style.height = 'auto';
+        (el as HTMLElement).style.maxHeight = 'none';
+      });
+    }
   });
+  
+  // Restaurer la position de scroll originale
+  element.scrollTop = originalScrollTop;
+  element.scrollLeft = originalScrollLeft;
 
   return canvas;
 }
@@ -80,24 +122,46 @@ export async function generatePDFFromElement(
   // Calculer les dimensions de l'image
   const imgWidth = canvas.width;
   const imgHeight = canvas.height;
-  const ratio = imgWidth / imgHeight;
+  const pixelRatio = window.devicePixelRatio || 1;
+  const scale = config.scale || 2;
+  
+  // Convertir les pixels en mm (1px = 0.264583mm à 96dpi)
+  const pxToMm = 0.264583;
+  const imgWidthMm = (imgWidth / scale) * pxToMm;
+  const imgHeightMm = (imgHeight / scale) * pxToMm;
+  
+  // Calculer le ratio pour ajuster à la largeur de la page
+  const widthRatio = contentWidth / imgWidthMm;
+  const heightRatio = contentHeight / imgHeightMm;
+  const ratio = Math.min(widthRatio, heightRatio);
+  
+  const finalWidth = imgWidthMm * ratio;
+  const finalHeight = imgHeightMm * ratio;
 
-  let finalWidth = contentWidth;
-  let finalHeight = contentWidth / ratio;
-
-  // Ajuster si l'image est trop haute
+  // Si l'image est plus haute qu'une page, découper en plusieurs pages
   if (finalHeight > contentHeight) {
-    finalHeight = contentHeight;
-    finalWidth = contentHeight * ratio;
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    let heightLeft = finalHeight;
+    let position = 0;
+    
+    // Ajouter la première page
+    pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, finalHeight);
+    heightLeft -= contentHeight;
+    
+    // Ajouter les pages suivantes si nécessaire
+    while (heightLeft > 0) {
+      position = (finalHeight - heightLeft) / ratio;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', margin, margin - (position * ratio), finalWidth, finalHeight);
+      heightLeft -= contentHeight;
+    }
+  } else {
+    // Centrer l'image si elle tient sur une page
+    const x = margin + (contentWidth - finalWidth) / 2;
+    const y = margin + (contentHeight - finalHeight) / 2;
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
   }
-
-  // Centrer l'image
-  const x = margin + (contentWidth - finalWidth) / 2;
-  const y = margin + (contentHeight - finalHeight) / 2;
-
-  // Ajouter l'image au PDF
-  const imgData = canvas.toDataURL('image/png', 1.0);
-  pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
 
   return pdf;
 }

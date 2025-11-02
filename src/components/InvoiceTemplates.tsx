@@ -1099,7 +1099,7 @@ const FLEXTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
   const documentNumber = form.reference || form.id || `${typeToPrefix[docType] || 'DOC'}${yearSuffix}00001`;
 
   return (
-    <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Inter, sans-serif', minHeight: '297mm' }}>
+    <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Inter, sans-serif', minHeight: '297mm' }} data-invoice-template>
       {/* En-tête amélioré avec gradient */}
       <div className="mb-6 print-header relative overflow-hidden">
         {/* Bandeau gradient en haut */}
@@ -1462,7 +1462,7 @@ const ProformaTemplate1: React.FC<InvoiceTemplateProps> = ({ form }) => {
   const documentNumber = form.reference || form.id || `${typeToPrefix[docType] || 'DOC'}${yearSuffix}00001`;
 
   return (
-    <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Inter, sans-serif', minHeight: '297mm' }}>
+    <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Inter, sans-serif', minHeight: '297mm' }} data-invoice-template>
       {/* En-tête avec motif ondulé bleu */}
       <div className="w-full print-header relative" style={{ 
         background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)',
@@ -1664,7 +1664,7 @@ const ProformaTemplate2: React.FC<InvoiceTemplateProps> = ({ form }) => {
     : form.date;
 
   return (
-    <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Inter, sans-serif', minHeight: '297mm' }}>
+    <div className="w-full mx-auto bg-white print-container" style={{ fontFamily: 'Inter, sans-serif', minHeight: '297mm' }} data-invoice-template>
       {/* En-tête bleu avec bord arrondi en bas */}
       <div className="w-full print-header relative" style={{ 
         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',

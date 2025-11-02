@@ -196,18 +196,72 @@ export async function generatePDFFromTemplate(
   filename: string = 'document.pdf'
 ): Promise<jsPDF> {
   try {
-    // Capture le template avec html2canvas
+    // Sauvegarder la position de scroll originale
+    const originalScrollTop = templateElement.scrollTop;
+    const originalScrollLeft = templateElement.scrollLeft;
+    
+    // Forcer le scroll en haut pour capturer tout depuis le début
+    templateElement.scrollTop = 0;
+    templateElement.scrollLeft = 0;
+    
+    // Attendre que le DOM soit complètement rendu
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // S'assurer que tous les éléments sont visibles (désactiver overflow hidden temporairement)
+    const originalOverflow = templateElement.style.overflow;
+    const originalOverflowY = templateElement.style.overflowY;
+    templateElement.style.overflow = 'visible';
+    templateElement.style.overflowY = 'visible';
+    
+    // Obtenir les dimensions réelles du contenu
+    const contentWidth = templateElement.scrollWidth || templateElement.offsetWidth;
+    const contentHeight = templateElement.scrollHeight || templateElement.offsetHeight;
+    
+    // Capture le template avec html2canvas - configuration optimisée
     const canvas = await html2canvas(templateElement, {
       scale: 2, // Améliore la qualité
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: templateElement.scrollWidth,
-      height: templateElement.scrollHeight
+      width: contentWidth,
+      height: contentHeight,
+      windowWidth: contentWidth,
+      windowHeight: contentHeight,
+      scrollX: 0,
+      scrollY: 0,
+      logging: false, // Désactiver les logs pour performance
+      onclone: (clonedDoc) => {
+        // S'assurer que tous les éléments sont visibles dans le clone
+        const clonedElement = clonedDoc.querySelector('[data-invoice-template]') || 
+                             clonedDoc.body.querySelector('div.print-container') ||
+                             clonedDoc.body.querySelector('div');
+        if (clonedElement) {
+          (clonedElement as HTMLElement).style.overflow = 'visible';
+          (clonedElement as HTMLElement).style.overflowY = 'visible';
+          (clonedElement as HTMLElement).style.height = 'auto';
+          (clonedElement as HTMLElement).style.maxHeight = 'none';
+        }
+        
+        // S'assurer que les sections totaux sont visibles
+        const totalsElements = clonedDoc.querySelectorAll('.invoice-totals, .print-no-break');
+        totalsElements.forEach((el: Element) => {
+          (el as HTMLElement).style.display = 'block';
+          (el as HTMLElement).style.visibility = 'visible';
+          (el as HTMLElement).style.opacity = '1';
+          (el as HTMLElement).style.position = 'relative';
+          (el as HTMLElement).style.height = 'auto';
+        });
+      }
     });
+    
+    // Restaurer les styles originaux
+    templateElement.style.overflow = originalOverflow;
+    templateElement.style.overflowY = originalOverflowY;
+    templateElement.scrollTop = originalScrollTop;
+    templateElement.scrollLeft = originalScrollLeft;
 
     // Crée le PDF
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL('image/png', 1.0);
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -220,17 +274,36 @@ export async function generatePDFFromTemplate(
     const imgWidth = canvas.width;
     const imgHeight = canvas.height;
     
-    // Calcule le ratio pour ajuster l'image
-    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+    // Calculer le ratio pour que l'image tienne sur la page
+    const widthRatio = pdfWidth / imgWidth;
+    const heightRatio = pdfHeight / imgHeight;
+    const ratio = Math.min(widthRatio, heightRatio);
+    
     const finalWidth = imgWidth * ratio;
     const finalHeight = imgHeight * ratio;
-
-    // Centre l'image sur la page
-    const x = (pdfWidth - finalWidth) / 2;
-    const y = (pdfHeight - finalHeight) / 2;
-
-    // Ajoute l'image au PDF
-    pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+    
+    // Si l'image est plus haute qu'une page, découper en plusieurs pages
+    if (finalHeight > pdfHeight) {
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      // Ajouter la première page
+      pdf.addImage(imgData, 'PNG', 0, 0, finalWidth, finalHeight);
+      heightLeft -= pdfHeight / ratio;
+      
+      // Ajouter les pages suivantes si nécessaire
+      while (heightLeft > 0) {
+        position = (imgHeight - heightLeft) * ratio;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, -position, finalWidth, imgHeight * ratio);
+        heightLeft -= pdfHeight / ratio;
+      }
+    } else {
+      // Centre l'image sur la page si elle tient sur une page
+      const x = (pdfWidth - finalWidth) / 2;
+      const y = (pdfHeight - finalHeight) / 2;
+      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+    }
 
     return pdf;
   } catch (error) {
