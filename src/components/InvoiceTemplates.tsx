@@ -1215,31 +1215,21 @@ const FLEXTemplate: React.FC<InvoiceTemplateProps> = ({ form }) => {
                 </tr>
               ))}
             </tbody>
+            <tfoot className="print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+              <tr className="bg-gray-50">
+                <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">TOTAL HT</td>
+                <td className="px-4 py-3 text-right font-bold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</td>
+              </tr>
+              <tr className="bg-gray-50">
+                <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">TVA {form.tva}%</td>
+                <td className="px-4 py-3 text-right font-bold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</td>
+              </tr>
+              <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <td colSpan={4} className="px-4 py-3 text-right font-bold text-lg">TOTAL TTC</td>
+                <td className="px-4 py-3 text-right font-bold text-xl">{totalTTC.toLocaleString('fr-FR')} FCFA</td>
+              </tr>
+            </tfoot>
           </table>
-        </div>
-      </div>
-
-      {/* Zone totaux - Amélioré */}
-      <div className="mb-6 print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-        <div className="flex justify-end">
-          <div className="w-80">
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border-2 border-gray-300 shadow-lg" style={{ backgroundColor: '#f9fafb !important', borderColor: '#d1d5db !important' }}>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b-2 border-gray-300" style={{ borderColor: '#d1d5db !important' }}>
-                  <span className="text-gray-700 font-bold text-base" style={{ color: '#374151 !important', fontWeight: 'bold' }}>TOTAL HT</span>
-                  <span className="text-gray-900 font-extrabold text-base" style={{ color: '#111827 !important', fontWeight: '800' }}>{totalHT.toLocaleString('fr-FR')} FCFA</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b-2 border-gray-300" style={{ borderColor: '#d1d5db !important' }}>
-                  <span className="text-gray-700 font-bold text-base" style={{ color: '#374151 !important', fontWeight: 'bold' }}>TVA {form.tva}%</span>
-                  <span className="text-gray-900 font-extrabold text-base" style={{ color: '#111827 !important', fontWeight: '800' }}>{tvaAmount.toLocaleString('fr-FR')} FCFA</span>
-                </div>
-                <div className="flex justify-between items-center py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg px-4 shadow-md" style={{ background: 'linear-gradient(to right, #2563eb, #9333ea) !important', color: '#ffffff !important' }}>
-                  <span className="font-extrabold text-lg" style={{ color: '#ffffff !important', fontWeight: '800' }}>TOTAL TTC</span>
-                  <span className="font-black text-xl" style={{ color: '#ffffff !important', fontWeight: '900' }}>{totalTTC.toLocaleString('fr-FR')} FCFA</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1546,11 +1536,25 @@ const ProformaTemplate1: React.FC<InvoiceTemplateProps> = ({ form }) => {
               </tr>
             ))}
           </tbody>
+          <tfoot className="print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+            <tr style={{ backgroundColor: '#f3f4f6' }}>
+              <td colSpan={3} className="px-4 py-3 text-right font-bold text-gray-700">SUB TOTAL</td>
+              <td className="px-4 py-3 text-right font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+            <tr style={{ backgroundColor: '#f3f4f6' }}>
+              <td colSpan={3} className="px-4 py-3 text-right font-bold text-gray-700">TVA ({form.tva || 18}%)</td>
+              <td className="px-4 py-3 text-right font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1e40af' }} className="text-white">
+              <td colSpan={3} className="px-4 py-3 text-right font-bold text-lg">TOTAL</td>
+              <td className="px-4 py-3 text-right font-bold text-xl">{totalTTC.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
       {/* Résumé et paiement */}
-      <div className="px-8 mb-6 flex justify-between print-no-break invoice-totals">
+      <div className="px-8 mb-6 flex justify-between print-no-break">
         <div className="w-1/2">
           <div className="mb-4">
             <h3 className="font-bold text-gray-800 mb-2">CONDITIONS DE PAIEMENT</h3>
@@ -1582,22 +1586,7 @@ const ProformaTemplate1: React.FC<InvoiceTemplateProps> = ({ form }) => {
             </p>
           </div>
         </div>
-        <div className="w-1/2 text-right pl-4 print-no-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-          <div className="inline-block bg-gray-50 p-4 rounded-lg border-2 border-gray-300" style={{ backgroundColor: '#f9fafb !important', borderColor: '#d1d5db !important' }}>
-            <div className="mb-2 flex justify-between min-w-[200px]">
-              <span className="text-gray-700 font-bold">SUB TOTAL: </span>
-              <span className="font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div className="mb-2 flex justify-between border-t border-gray-300 pt-2">
-              <span className="text-gray-700 font-bold">TVA ({form.tva || 18}%): </span>
-              <span className="font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div className="mt-3 pt-3 border-t-2 border-gray-400">
-              <div className="text-xl font-bold text-gray-900" style={{ color: '#000 !important', fontWeight: 'bold' }}>
-                TOTAL: {totalTTC.toLocaleString('fr-FR')} FCFA
-              </div>
-            </div>
-          </div>
+        <div className="w-1/2 text-right pl-4">
           <div className="mt-6 text-right">
             <div className="text-sm text-gray-600 mb-2">SIGNATURE AUTORISÉE</div>
             <div className="w-32 h-16 border-b-2 border-gray-400 ml-auto"></div>
@@ -1746,11 +1735,29 @@ const ProformaTemplate2: React.FC<InvoiceTemplateProps> = ({ form }) => {
               </tr>
             ))}
           </tbody>
+          <tfoot className="print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+            <tr style={{ backgroundColor: '#f3f4f6' }}>
+              <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">Subtotal:</td>
+              <td className="px-4 py-3 text-right font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+            <tr style={{ backgroundColor: '#f3f4f6' }}>
+              <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">Remise:</td>
+              <td className="px-4 py-3 text-right font-semibold text-gray-900">{discount.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+            <tr style={{ backgroundColor: '#f3f4f6' }}>
+              <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">TVA ({form.tva || 18}%):</td>
+              <td className="px-4 py-3 text-right font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+            <tr style={{ backgroundColor: '#3b82f6' }} className="text-white">
+              <td colSpan={4} className="px-4 py-3 text-right font-bold text-lg">Total:</td>
+              <td className="px-4 py-3 text-right font-bold text-lg">{totalTTC.toLocaleString('fr-FR')} FCFA</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
       {/* Résumé et paiement */}
-      <div className="px-8 mb-6 flex justify-between print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+      <div className="px-8 mb-6 flex justify-between print-no-break">
         <div className="w-1/2">
           <div className="mb-4">
             <h3 className="font-bold text-gray-900 mb-2">MODE DE PAIEMENT</h3>
@@ -1786,24 +1793,7 @@ const ProformaTemplate2: React.FC<InvoiceTemplateProps> = ({ form }) => {
             </p>
           </div>
         </div>
-        <div className="w-1/2 text-right pl-4 print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-          <div className="inline-block min-w-[220px] bg-gray-50 p-4 rounded-lg border-2 border-gray-300" style={{ backgroundColor: '#f9fafb !important', borderColor: '#d1d5db !important' }}>
-            <div className="mb-2 flex justify-between">
-              <span className="text-gray-700 font-bold">Subtotal:</span>
-              <span className="font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div className="mb-2 flex justify-between">
-              <span className="text-gray-700 font-bold">Remise:</span>
-              <span className="font-semibold text-gray-900">{discount.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div className="mb-3 flex justify-between border-t border-gray-300 pt-2">
-              <span className="text-gray-700 font-bold">TVA ({form.tva || 18}%):</span>
-              <span className="font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div className="px-4 py-3 rounded-lg text-white font-bold text-lg shadow-md" style={{ backgroundColor: '#3b82f6 !important', color: '#ffffff !important' }}>
-              Total: {totalTTC.toLocaleString('fr-FR')} FCFA
-            </div>
-          </div>
+        <div className="w-1/2 text-right pl-4">
           <div className="mt-6 text-right">
             <div className="text-sm text-gray-600 mb-2">SIGNATURE AUTORISÉE</div>
             <div className="w-32 h-16 border-b-2 border-gray-400 ml-auto"></div>
