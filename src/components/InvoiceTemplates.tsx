@@ -1536,25 +1536,11 @@ const ProformaTemplate1: React.FC<InvoiceTemplateProps> = ({ form }) => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td colSpan={3} className="px-4 py-3 text-right font-bold text-gray-700">SUB TOTAL</td>
-              <td className="px-4 py-3 text-right font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td colSpan={3} className="px-4 py-3 text-right font-bold text-gray-700">TVA ({form.tva || 18}%)</td>
-              <td className="px-4 py-3 text-right font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-            <tr style={{ backgroundColor: '#1e40af' }} className="text-white">
-              <td colSpan={3} className="px-4 py-3 text-right font-bold text-lg">TOTAL</td>
-              <td className="px-4 py-3 text-right font-bold text-xl">{totalTTC.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-          </tfoot>
         </table>
       </div>
 
       {/* Résumé et paiement */}
-      <div className="px-8 mb-6 flex justify-between print-no-break">
+      <div className="px-8 mb-6 flex justify-between print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
         <div className="w-1/2">
           <div className="mb-4">
             <h3 className="font-bold text-gray-800 mb-2">CONDITIONS DE PAIEMENT</h3>
@@ -1586,7 +1572,22 @@ const ProformaTemplate1: React.FC<InvoiceTemplateProps> = ({ form }) => {
             </p>
           </div>
         </div>
-        <div className="w-1/2 text-right pl-4">
+        <div className="w-1/2 text-right pl-4 print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <div className="inline-block bg-gray-50 p-4 rounded-lg border-2 border-gray-300" style={{ backgroundColor: '#f9fafb !important', borderColor: '#d1d5db !important' }}>
+            <div className="mb-2 flex justify-between min-w-[200px]">
+              <span className="text-gray-700 font-bold">SUB TOTAL: </span>
+              <span className="font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div className="mb-2 flex justify-between border-t border-gray-300 pt-2">
+              <span className="text-gray-700 font-bold">TVA ({form.tva || 18}%): </span>
+              <span className="font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div className="mt-3 pt-3 border-t-2 border-gray-400">
+              <div className="text-xl font-bold text-gray-900" style={{ color: '#000 !important', fontWeight: 'bold' }}>
+                TOTAL: {totalTTC.toLocaleString('fr-FR')} FCFA
+              </div>
+            </div>
+          </div>
           <div className="mt-6 text-right">
             <div className="text-sm text-gray-600 mb-2">SIGNATURE AUTORISÉE</div>
             <div className="w-32 h-16 border-b-2 border-gray-400 ml-auto"></div>
@@ -1735,29 +1736,11 @@ const ProformaTemplate2: React.FC<InvoiceTemplateProps> = ({ form }) => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">Subtotal:</td>
-              <td className="px-4 py-3 text-right font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">Remise:</td>
-              <td className="px-4 py-3 text-right font-semibold text-gray-900">{discount.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td colSpan={4} className="px-4 py-3 text-right font-bold text-gray-700">TVA ({form.tva || 18}%):</td>
-              <td className="px-4 py-3 text-right font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-            <tr style={{ backgroundColor: '#3b82f6' }} className="text-white">
-              <td colSpan={4} className="px-4 py-3 text-right font-bold text-lg">Total:</td>
-              <td className="px-4 py-3 text-right font-bold text-lg">{totalTTC.toLocaleString('fr-FR')} FCFA</td>
-            </tr>
-          </tfoot>
         </table>
       </div>
 
       {/* Résumé et paiement */}
-      <div className="px-8 mb-6 flex justify-between print-no-break">
+      <div className="px-8 mb-6 flex justify-between print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
         <div className="w-1/2">
           <div className="mb-4">
             <h3 className="font-bold text-gray-900 mb-2">MODE DE PAIEMENT</h3>
@@ -1793,7 +1776,24 @@ const ProformaTemplate2: React.FC<InvoiceTemplateProps> = ({ form }) => {
             </p>
           </div>
         </div>
-        <div className="w-1/2 text-right pl-4">
+        <div className="w-1/2 text-right pl-4 print-no-break invoice-totals" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <div className="inline-block min-w-[220px] bg-gray-50 p-4 rounded-lg border-2 border-gray-300" style={{ backgroundColor: '#f9fafb !important', borderColor: '#d1d5db !important' }}>
+            <div className="mb-2 flex justify-between">
+              <span className="text-gray-700 font-bold">Subtotal:</span>
+              <span className="font-semibold text-gray-900">{totalHT.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div className="mb-2 flex justify-between">
+              <span className="text-gray-700 font-bold">Remise:</span>
+              <span className="font-semibold text-gray-900">{discount.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div className="mb-3 flex justify-between border-t border-gray-300 pt-2">
+              <span className="text-gray-700 font-bold">TVA ({form.tva || 18}%):</span>
+              <span className="font-semibold text-gray-900">{tvaAmount.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div className="px-4 py-3 rounded-lg text-white font-bold text-lg shadow-md" style={{ backgroundColor: '#3b82f6 !important', color: '#ffffff !important' }}>
+              Total: {totalTTC.toLocaleString('fr-FR')} FCFA
+            </div>
+          </div>
           <div className="mt-6 text-right">
             <div className="text-sm text-gray-600 mb-2">SIGNATURE AUTORISÉE</div>
             <div className="w-32 h-16 border-b-2 border-gray-400 ml-auto"></div>
@@ -1818,160 +1818,6 @@ const ProformaTemplate2: React.FC<InvoiceTemplateProps> = ({ form }) => {
         <div className="text-center text-white text-sm">
           <p>EDIBA INTER SARL U • 331 Rue AGP Totsi, Lomé-TOGO</p>
           <p className="mt-1">Tel: +228 92 60 05 42 • Email: edibainter@gmail.com</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Template Proforma avec design EDIBA INTER
-const ProformaTemplate: React.FC<InvoiceTemplateProps> = ({ form, design }) => {
-  const totalHT = form.items.reduce((sum: number, item: LineItem) => sum + item.quantity * item.unitPrice, 0);
-  const typeToLabel: Record<string, string> = {
-    proforma: 'FACTURE PROFORMA',
-    delivery: 'BON DE LIVRAISON',
-    order: 'COMMANDE',
-    invoice: 'FACTURE'
-  };
-  const typeToPrefix: Record<string, string> = {
-    proforma: 'D',
-    delivery: 'BL',
-    order: 'CMD',
-    invoice: 'F'
-  };
-  const docType = form.type || 'proforma';
-  const titleLabel = typeToLabel[docType] || 'DOCUMENT';
-  const yearSuffix = new Date(form.date || Date.now()).getFullYear().toString().slice(-2);
-  const generatedNumber = form.id || `${typeToPrefix[docType] || 'DOC'}${yearSuffix}00001`;
-
-  return (
-    <div className="proforma-template" style={{ minHeight: '297mm', display: 'flex', flexDirection: 'column' }}>
-      <div className="print-container recommended-template" style={{ width: '210mm', padding: '10mm', margin: '0 auto', color: '#000', fontFamily: 'Rockwell, Georgia, "Times New Roman", Times, serif', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        {/* En-tête image plein largeur */}
-        <div className="print-header" style={{ marginBottom: 10 }}>
-          <img src="./factureimage/header.jpg" alt="En-tête EDIBA INTER" style={{ width: '100%', height: 'auto', maxHeight: 140, objectFit: 'cover', display: 'block' }} />
-        </div>
-
-        {/* Infos société à gauche sous l'image */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-          <div className="company-info" style={{ textAlign: 'left', fontSize: '10pt' }}>
-            <div><span className="label">Raison Sociale :</span> EDIBA INTER SARL U</div>
-            <div><span className="label">Adresse :</span> Agbalépedo, Rue 335 AGP, Lomé</div>
-            <div><span className="label">Tél :</span> +228 92 60 05 42 / 93 39 18 70</div>
-            <div><span className="label">Email :</span> edibainter@gmail.com</div>
-            <div><span className="label">Date de création :</span> 20 Août 2021</div>
-            <div><span className="label">Statut Juridique :</span> SARL U</div>
-            <div><span className="label">Régime fiscal :</span> Réel avec TVA</div>
-            <div><span className="label">NIF :</span> 1001694526</div>
-          </div>
-          <div style={{ minWidth: 1 }} />
-        </div>
-
-        {/* Date centrée sous les informations: Ville, le jj mois aaaa */}
-        <div className="document-date" style={{ textAlign: 'center', fontSize: '10pt', marginBottom: 8 }}>
-          {(form.city || 'Lomé')}, le {formatFrenchLongDate(form.date)}
-          {form.contractOrderReference && (
-            <div style={{ marginTop: '4px', fontWeight: 'bold' }}>{form.contractOrderReference}</div>
-          )}
-        </div>
-
-        {/* Titre centré */}
-        <div className="document-title" style={{ textAlign: 'center', margin: '8pt 0', fontWeight: 700, textDecoration: 'underline' }}>
-          {titleLabel} N° {generatedNumber}
-        </div>
-
-        {/* CLIENT à gauche (souligné) */}
-        <div className="client-info" style={{ marginBottom: 8 }}>
-          <span style={{ textDecoration: 'underline', fontWeight: 700 }}>CLIENT</span>: {form.client || form.institution || ''}
-        </div>
-
-        {/* Contenu principal */}
-        <table className="items-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-          <thead>
-            <tr>
-              <th style={{ border: '1px solid #000', padding: 4 }}>N°</th>
-              <th style={{ border: '1px solid #000', padding: 4 }}>Désignation</th>
-              <th style={{ border: '1px solid #000', padding: 4 }}>Description</th>
-              <th style={{ border: '1px solid #000', padding: 4 }}>Quantité</th>
-              <th style={{ border: '1px solid #000', padding: 4 }}>Prix Unitaire</th>
-              <th style={{ border: '1px solid #000', padding: 4 }}>Montant</th>
-            </tr>
-          </thead>
-          <tbody>
-            {form.items.map((item: LineItem, index: number) => (
-              <tr key={index}>
-                <td style={{ border: '1px solid #000', textAlign: 'center', padding: 4 }}>{index + 1}</td>
-                <td style={{ border: '1px solid #000', padding: 4 }}>{item.description.split('\n')[0] || item.description}</td>
-                <td style={{ border: '1px solid #000', padding: 4, textAlign: 'left' }}>
-                  {item.description.split('\n').slice(1).map((line, i) => (<div key={i}>{line}</div>))}
-                </td>
-                <td style={{ border: '1px solid #000', textAlign: 'center', padding: 4 }}>{item.quantity}</td>
-                <td style={{ border: '1px solid #000', textAlign: 'right', padding: 4 }}>{item.unitPrice.toLocaleString('fr-FR')}</td>
-                <td style={{ border: '1px solid #000', textAlign: 'right', padding: 4 }}>{(item.quantity * item.unitPrice).toLocaleString('fr-FR')}</td>
-              </tr>
-            ))}
-            <tr>
-              <td colSpan={5} style={{ border: '1px solid #000', textAlign: 'right', padding: 4, fontWeight: 700 }}>TOTAL HT</td>
-              <td style={{ border: '1px solid #000', textAlign: 'right', padding: 4, fontWeight: 700 }}>{totalHT.toLocaleString('fr-FR')}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* Totaux HT/TVA/TTC */}
-        {(() => {
-          const tvaAmount = Math.round((totalHT * (form.tva ?? 18)) / 100);
-          const totalTTC = totalHT + tvaAmount;
-          return (
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 8 }}>
-              <tbody>
-                <tr>
-                  <td style={{ border: '1px solid #000', padding: 4 }} colSpan={4} />
-                  <td style={{ border: '1px solid #000', padding: 4, textAlign: 'right', fontWeight: 700 }}>Montant total HT</td>
-                  <td style={{ border: '1px solid #000', padding: 4, textAlign: 'right', fontWeight: 700 }}>{totalHT.toLocaleString('fr-FR')}</td>
-                </tr>
-                <tr>
-                  <td style={{ border: '1px solid #000', padding: 4 }} colSpan={4} />
-                  <td style={{ border: '1px solid #000', padding: 4, textAlign: 'right', fontWeight: 700 }}>TVA {(form.tva ?? 18)}%</td>
-                  <td style={{ border: '1px solid #000', padding: 4, textAlign: 'right', fontWeight: 700 }}>{tvaAmount.toLocaleString('fr-FR')}</td>
-                </tr>
-                <tr>
-                  <td style={{ border: '1px solid #000', padding: 4 }} colSpan={4} />
-                  <td style={{ border: '1px solid #000', padding: 4, textAlign: 'right', fontWeight: 700 }}>Montant total TTC</td>
-                  <td style={{ border: '1px solid #000', padding: 4, textAlign: 'right', fontWeight: 700 }}>{totalTTC.toLocaleString('fr-FR')}</td>
-                </tr>
-              </tbody>
-            </table>
-          );
-        })()}
-
-        <div className="amount-in-words" style={{ marginTop: 12 }}>
-          {(() => {
-            const kind = (form.type === 'invoice') ? 'facture' : (form.type === 'order') ? 'commande' : (form.type === 'delivery') ? 'bon de livraison' : (form.type === 'contract') ? 'contrat' : 'facture proforma';
-            return (
-              <span>
-                Arrêté la présente {kind} à la somme de : <strong>{amountToWordsFCFA(totalHT)}.</strong>
-              </span>
-            );
-          })()}
-        </div>
-
-        {/* Mention "Signée" et qualité */}
-        <div style={{ textAlign: 'right', marginTop: 10, fontWeight: 700 }}>Signée</div>
-        <div style={{ height: 16 }} />
-        <div style={{ textAlign: 'left', fontSize: '10pt' }}>
-          En qualité de la Directrice dûment autorisée à signer pour et au nom de EDIBA INTER SARL U.
-        </div>
-
-        <div className="signature" style={{ textAlign: 'right', marginTop: 32 }}>
-          La Directrice<br />
-          <span style={{ display: 'inline-block', height: 12 }} />
-          <strong>ALAYI Abide</strong>
-        </div>
-
-        {/* Pied de page collé en bas */}
-        <div style={{ marginTop: 'auto' }} />
-        <div className="recommended-footer print-footer" style={{ textAlign: 'center' }}>
-          <img src="./factureimage/footer.jpg" alt="Pied de page" style={{ width: '100%', height: 'auto', maxHeight: 120, objectFit: 'cover', display: 'block' }} />
         </div>
       </div>
     </div>
@@ -2007,9 +1853,8 @@ const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ form, design }) => {
     case 'recommended':
       return <RecommendedTemplate form={form} design={design} />;
     case 'proforma':
-      // Utiliser le design par défaut avec images si design n'est pas spécifié
-      return <ProformaTemplate form={form} design={design} />;
     case 'proforma1':
+      // Rediriger 'proforma' vers 'proforma1' pour compatibilité
       return <ProformaTemplate1 form={form} design={design} />;
     case 'proforma2':
       return <ProformaTemplate2 form={form} design={design} />;

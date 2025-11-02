@@ -14,14 +14,6 @@ const InvoiceDesignSelector: React.FC<InvoiceDesignSelectorProps> = ({
 }) => {
   const designs = [
     {
-      id: 'proforma',
-      name: 'Facture Proforma EDIBA (Défaut)',
-      description: 'Design spécialisé pour factures proforma avec en-tête et pied de page personnalisés',
-      preview: 'proforma-preview',
-      colors: ['#1d4ed8', '#10b981', '#f3f4f6'],
-      featured: true
-    },
-    {
       id: 'flex',
       name: 'Design FLEX (Amélioré)',
       description: 'Design moderne et professionnel avec gradient, mise en page optimisée et structure élégante',
@@ -35,7 +27,7 @@ const InvoiceDesignSelector: React.FC<InvoiceDesignSelectorProps> = ({
       description: 'Design moderne avec en-tête bleu ondulé, icône distinctive et mise en page élégante',
       preview: 'proforma1-preview',
       colors: ['#3b82f6', '#2563eb', '#1e40af'],
-      featured: false
+      featured: true
     },
     {
       id: 'proforma2',
@@ -43,7 +35,7 @@ const InvoiceDesignSelector: React.FC<InvoiceDesignSelectorProps> = ({
       description: 'Design élégant avec logo grid, courbes arrondies et présentation professionnelle',
       preview: 'proforma2-preview',
       colors: ['#1e40af', '#3b82f6', '#60a5fa'],
-      featured: false
+      featured: true
     }
   ];
 
