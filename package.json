@@ -22,7 +22,8 @@
     "start:backend": "node simple-backend-server.cjs",
     "start:all": "start-all.bat",
     "start:all:unix": "./start-all.sh",
-    "deploy": "npm run build && echo 'Build terminé! Consultez GUIDE_DEPLOIEMENT_WEB.md pour les options de déploiement'",
+    "deploy": "npm run build && echo 'Build terminé! Consultez DEPLOIEMENT_AUTOMATIQUE_GITHUB_NETLIFY.md pour le déploiement automatique'",
+    "deploy:auto": "deploy-auto.bat",
     "deploy:vercel": "npm run build && vercel --prod",
     "deploy:netlify": "npm run build && netlify deploy --prod --dir=dist",
     "deploy:github": "npm run build && gh-pages -d dist"

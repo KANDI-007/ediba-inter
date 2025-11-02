@@ -41,6 +41,7 @@ const ArticlesModule: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -50,17 +51,31 @@ const ArticlesModule: React.FC = () => {
   const [preSelectedCategoryId, setPreSelectedCategoryId] = useState<string | null>(null);
   const [showInlineForm, setShowInlineForm] = useState(false);
   const [editingArticleInline, setEditingArticleInline] = useState<Article | null>(null);
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock' | 'date'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock' | 'date' | 'domain'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Récupérer tous les domaines uniques
+  const uniqueDomains = useMemo(() => {
+    const domains = new Set<string>();
+    articles.forEach((article: Article) => {
+      if (article.domain) {
+        domains.add(article.domain);
+      }
+    });
+    return Array.from(domains).sort();
+  }, [articles]);
 
   // Filtrage et tri des articles
   const filteredArticles = useMemo(() => {
     let filtered = articles.filter((article: Article) => {
       const matchesSearch = article.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            article.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           article.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+                           article.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           article.domain?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           article.categoryId?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = !selectedCategory || article.categoryId === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesDomain = !selectedDomain || article.domain === selectedDomain;
+      return matchesSearch && matchesCategory && matchesDomain;
     });
 
     // Tri
@@ -84,6 +99,10 @@ const ArticlesModule: React.FC = () => {
           aValue = new Date(a.dateCreation).getTime();
           bValue = new Date(b.dateCreation).getTime();
           break;
+        case 'domain':
+          aValue = (a.domain || '').toLowerCase();
+          bValue = (b.domain || '').toLowerCase();
+          break;
         default:
           return 0;
       }
@@ -94,7 +113,7 @@ const ArticlesModule: React.FC = () => {
     });
 
     return filtered;
-  }, [articles, searchTerm, selectedCategory, sortBy, sortOrder]);
+  }, [articles, searchTerm, selectedCategory, selectedDomain, sortBy, sortOrder]);
 
   // Statistiques
   const stats = useMemo(() => {
@@ -337,6 +356,24 @@ const ArticlesModule: React.FC = () => {
               </select>
             </div>
 
+            {/* Filtre par domaine */}
+            {uniqueDomains.length > 0 && (
+              <div className="lg:w-64">
+                <select
+                  value={selectedDomain || ''}
+                  onChange={(e) => setSelectedDomain(e.target.value || null)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                >
+                  <option value="">Tous les domaines</option>
+                  {uniqueDomains.map((domain: string) => (
+                    <option key={domain} value={domain}>
+                      {domain}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
 
             {/* Tri */}
             <div className="flex gap-2">
@@ -348,6 +385,7 @@ const ArticlesModule: React.FC = () => {
                 <option value="name">Nom</option>
                 <option value="price">Prix</option>
                 <option value="stock">Stock</option>
+                <option value="domain">Domaine</option>
                 <option value="date">Date</option>
               </select>
               <button
@@ -550,6 +588,13 @@ const ArticlesModule: React.FC = () => {
                               <span className="text-xs text-gray-600">{category.name}</span>
                             </div>
                           )}
+                          {article.domain && (
+                            <div className="mb-2">
+                              <span className="text-xs px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+                                {article.domain}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex space-x-1">
                           <button
@@ -578,6 +623,20 @@ const ArticlesModule: React.FC = () => {
                             <span className="font-semibold">{article.unitPrice.toLocaleString()} FCFA</span>
                           </div>
                         )}
+                        {(article.lowerLimitPrice || article.upperLimitPrice) && (
+                          <div className="flex justify-between text-xs text-gray-600">
+                            <span>Fourchette:</span>
+                            <span>
+                              {article.lowerLimitPrice ? article.lowerLimitPrice.toLocaleString() : '-'} - {article.upperLimitPrice ? article.upperLimitPrice.toLocaleString() : '-'} FCFA
+                            </span>
+                          </div>
+                        )}
+                        {article.unit && (
+                          <div className="flex justify-between text-xs text-gray-600">
+                            <span>Unité:</span>
+                            <span className="font-medium">{article.unit}</span>
+                          </div>
+                        )}
                         
                         {article.stock !== undefined && (
                           <div className="flex justify-between items-center text-sm">
@@ -602,6 +661,7 @@ const ArticlesModule: React.FC = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Article</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domaine</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
@@ -629,6 +689,15 @@ const ArticlesModule: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
+                          {article.domain ? (
+                            <span className="text-sm px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+                              {article.domain}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
                           {category ? (
                             <div className="flex items-center">
                               <div className={`w-3 h-3 rounded-full ${category.color.split(' ')[0]} mr-2`}></div>
@@ -639,7 +708,18 @@ const ArticlesModule: React.FC = () => {
                           )}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {article.unitPrice ? `${article.unitPrice.toLocaleString()} FCFA` : '-'}
+                          <div>
+                            {article.unitPrice ? (
+                              <div className="font-semibold">{article.unitPrice.toLocaleString()} FCFA</div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                            {(article.lowerLimitPrice || article.upperLimitPrice) && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                {article.lowerLimitPrice ? article.lowerLimitPrice.toLocaleString() : '-'} - {article.upperLimitPrice ? article.upperLimitPrice.toLocaleString() : '-'} FCFA
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {article.stock !== undefined ? article.stock : '-'}

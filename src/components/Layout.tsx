@@ -22,6 +22,7 @@ import { images } from '../assets/images';
 import NotificationPanel from './NotificationPanel';
 import UserProfileMenu from './UserProfileMenu';
 import UserProfileHeader from './UserProfileHeader';
+import LogoIcon from './LogoIcon';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -69,7 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         { name: 'Utilisateurs', href: '/users', icon: Users, permission: 'users.manage' },
         { name: 'Bulletins de Paie', href: '/payroll', icon: FileText, permission: 'payroll.view' },
         { name: 'Décharges', href: '/discharge', icon: FileCheck, permission: 'discharges.view' },
-        { name: 'Exercices Fiscaux', href: '/fiscal-years', icon: Calendar, permission: 'fiscal.manage' },
+        { name: 'Exercices Fiscaux', href: '/fiscal-year', icon: Calendar, permission: 'fiscal.manage' },
       ]
     },
     {
@@ -125,7 +126,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="relative bg-white p-2 rounded-xl shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:rotate-2">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 rounded-xl"></div>
                 <div className="relative bg-white p-1.5 rounded-lg shadow-inner">
-                  <img src="./logo-ediba.png" alt="EDIBA-INTER" className="h-6 w-auto" />
+                  <LogoIcon size={24} variant="gradient" className="h-6 w-6" />
                 </div>
                 {/* Effet de brillance */}
                 <div className="absolute top-0.5 left-0.5 right-0.5 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent rounded-full"></div>
@@ -221,7 +222,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="relative bg-white p-2.5 rounded-xl shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:rotate-2">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 rounded-xl"></div>
                 <div className="relative bg-white p-2 rounded-lg shadow-inner">
-                  <img src="./logo-ediba.png" alt="EDIBA-INTER" className="h-7 w-auto" />
+                  <LogoIcon size={28} variant="gradient" className="h-7 w-7" />
                 </div>
                 {/* Effet de brillance */}
                 <div className="absolute top-0.5 left-0.5 right-0.5 h-0.5 bg-gradient-to-r from-transparent via-white/60 to-transparent rounded-full"></div>

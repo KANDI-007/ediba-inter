@@ -146,7 +146,14 @@ const EspaceEdibaChat: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('http://localhost:3000/api/upload', {
+      // Détection automatique de l'environnement pour l'URL d'upload
+      const hostname = window.location.hostname;
+      const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+      const uploadUrl = isLocal 
+        ? 'http://localhost:3000/api/upload'
+        : (import.meta.env.VITE_API_URL || 'https://your-api-url.com/api/upload');
+
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
       });

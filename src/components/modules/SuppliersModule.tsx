@@ -20,12 +20,24 @@ import { useData } from '../../contexts/DataContext';
 
 const SuppliersModule: React.FC = () => {
   console.log('SuppliersModule - Component rendering');
-  const { addSupplierInvoice, suppliersList: contextSuppliers, addSupplier, deleteSupplier } = useData();
+  const { addSupplierInvoice, suppliersList: contextSuppliers, addSupplier, updateSupplier, deleteSupplier } = useData();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ raisonSociale: '', nif: '', rccm: '', adresse: '', telephone: '', email: '', regimeFiscal: 'Réel Normal', produits: '' });
+  const [form, setForm] = useState({ 
+    type: 'Societe' as 'Societe' | 'Particulier',
+    raisonSociale: '', 
+    nif: '', 
+    rccm: '', 
+    adresse: '', 
+    telephone: '', 
+    email: '', 
+    regimeFiscal: 'Réel avec TVA' as any,
+    classification: 'National' as 'National' | 'Particulier' | 'Etranger',
+    groupeFour: '',
+    produits: '' 
+  });
   
   // Utiliser les données du contexte ou les données par défaut
   const defaultSuppliers = [
@@ -166,7 +178,12 @@ const SuppliersModule: React.FC = () => {
   const filteredSuppliers = suppliersList.filter(supplier =>
     supplier.raisonSociale?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.nif?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.telephone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.adresse?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.groupeFour?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (supplier.type && supplier.type.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (supplier.classification && supplier.classification.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Normalise la propriété produits pour éviter les erreurs (string -> array)
@@ -180,16 +197,46 @@ const SuppliersModule: React.FC = () => {
 
   const handleAddSupplier = (newSupplier: any) => {
     try {
-      const supplier = addSupplier(newSupplier);
+      if (!newSupplier.raisonSociale || !newSupplier.nif) {
+        alert('Raison sociale et NIF sont requis');
+        return;
+      }
+      const supplier = addSupplier({
+        type: newSupplier.type || 'Societe',
+        classification: newSupplier.classification || 'National',
+        regimeFiscal: newSupplier.regimeFiscal || 'Réel avec TVA',
+        groupeFour: newSupplier.groupeFour || '',
+        ...newSupplier,
+        produits: newSupplier.produits || [],
+        articles: []
+      });
+      alert('✅ Fournisseur ajouté avec succès !');
       console.log('Added supplier:', supplier);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de l\'ajout du fournisseur:', error);
+      alert(`❌ Erreur lors de l'ajout: ${error?.message || error}`);
     }
   };
 
   const handleUpdateSupplier = (id: string, updates: any) => {
-    // Cette fonction devrait être implémentée dans le DataContext
-    console.log('Updated supplier:', id, updates);
+    try {
+      if (!updates.raisonSociale || !updates.nif) {
+        alert('Raison sociale et NIF sont requis');
+        return;
+      }
+      updateSupplier(id, {
+        type: updates.type || 'Societe',
+        classification: updates.classification || 'National',
+        regimeFiscal: updates.regimeFiscal || 'Réel avec TVA',
+        groupeFour: updates.groupeFour || '',
+        ...updates,
+        produits: updates.produits || []
+      });
+      alert('✅ Fournisseur modifié avec succès !');
+    } catch (error: any) {
+      console.error('Erreur lors de la modification du fournisseur:', error);
+      alert(`❌ Erreur lors de la modification: ${error?.message || error}`);
+    }
   };
 
   const handleDeleteSupplier = (id: string) => {
@@ -214,7 +261,23 @@ const SuppliersModule: React.FC = () => {
           </div>
           <div className="flex gap-2">
           <button 
-            onClick={() => { setEditingId(null); setForm({ raisonSociale: '', nif: '', rccm: '', adresse: '', telephone: '', email: '', regimeFiscal: 'Réel Normal', produits: '' }); setShowAddModal(true); }}
+            onClick={() => { 
+              setEditingId(null); 
+              setForm({ 
+                type: 'Societe',
+                classification: 'National',
+                raisonSociale: '', 
+                nif: '', 
+                rccm: '', 
+                adresse: '', 
+                telephone: '', 
+                email: '', 
+                regimeFiscal: 'Réel avec TVA', 
+                groupeFour: '',
+                produits: '' 
+              }); 
+              setShowAddModal(true); 
+            }}
             className="bg-white text-sky-600 px-4 py-2 rounded-lg font-medium hover:bg-sky-50 transition-colors duration-200 flex items-center"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -317,20 +380,52 @@ const SuppliersModule: React.FC = () => {
                   </div>
                   <div className="ml-3">
                     <h3 className="text-lg font-semibold text-gray-900">{supplier.raisonSociale}</h3>
-                    <p className="text-sm text-gray-500">{supplier.nif}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {supplier.type && (
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">{supplier.type}</span>
+                      )}
+                      {supplier.classification && (
+                        <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full">{supplier.classification}</span>
+                      )}
+                      <p className="text-sm text-gray-500">{supplier.nif}</p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex space-x-1">
                   <button className="p-2 text-gray-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors durée-200" onClick={() => {
                     setEditingId(supplier.id);
-                    setForm({ raisonSociale: supplier.raisonSociale, nif: supplier.nif, rccm: supplier.rccm || '', adresse: supplier.adresse || '', telephone: supplier.telephone || '', email: supplier.email || '', regimeFiscal: supplier.regimeFiscal || 'Réel Normal', produits: normalizeProduits(supplier.produits).join(', ') });
+                    setForm({ 
+                      type: supplier.type || 'Societe',
+                      classification: supplier.classification || 'National',
+                      raisonSociale: supplier.raisonSociale, 
+                      nif: supplier.nif, 
+                      rccm: supplier.rccm || '', 
+                      adresse: supplier.adresse || '', 
+                      telephone: supplier.telephone || '', 
+                      email: supplier.email || '', 
+                      regimeFiscal: supplier.regimeFiscal || 'Réel avec TVA', 
+                      groupeFour: supplier.groupeFour || '',
+                      produits: normalizeProduits(supplier.produits).join(', ') 
+                    });
                     setShowAddModal(true);
                   }}>
                     <Eye className="w-4 h-4" />
                   </button>
                   <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors durée-200" onClick={() => {
                     setEditingId(supplier.id);
-                    setForm({ raisonSociale: supplier.raisonSociale, nif: supplier.nif, rccm: supplier.rccm || '', adresse: supplier.adresse || '', telephone: supplier.telephone || '', email: supplier.email || '', regimeFiscal: supplier.regimeFiscal || 'Réel Normal', produits: normalizeProduits(supplier.produits).join(', ') });
+                    setForm({ 
+                      type: supplier.type || 'Societe',
+                      classification: supplier.classification || 'National',
+                      raisonSociale: supplier.raisonSociale, 
+                      nif: supplier.nif, 
+                      rccm: supplier.rccm || '', 
+                      adresse: supplier.adresse || '', 
+                      telephone: supplier.telephone || '', 
+                      email: supplier.email || '', 
+                      regimeFiscal: supplier.regimeFiscal || 'Réel avec TVA', 
+                      groupeFour: supplier.groupeFour || '',
+                      produits: normalizeProduits(supplier.produits).join(', ') 
+                    });
                     setShowAddModal(true);
                   }}>
                     <Edit className="w-4 h-4" />
@@ -377,6 +472,16 @@ const SuppliersModule: React.FC = () => {
                 </div>
               </div>
 
+              {supplier.groupeFour && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Groupe:</span>
+                    <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-medium">
+                      {supplier.groupeFour}
+                    </span>
+                  </div>
+                </div>
+              )}
               <div className="mt-4">
                 <p className="text-xs text-gray-500 mb-2">Produits/Services:</p>
                 <div className="flex flex-wrap gap-1">
@@ -414,11 +519,26 @@ const SuppliersModule: React.FC = () => {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-gray-600">Raison sociale</label>
+                  <label className="text-sm text-gray-600">Type</label>
+                  <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })}>
+                    <option value="Societe">Société</option>
+                    <option value="Particulier">Particulier</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Classification</label>
+                  <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.classification} onChange={(e) => setForm({ ...form, classification: e.target.value as any })}>
+                    <option value="National">National</option>
+                    <option value="Particulier">Particulier</option>
+                    <option value="Etranger">Etranger</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Raison sociale *</label>
                   <input className="mt-1 w-full border rounded-lg px-3 py-2" value={form.raisonSociale} onChange={(e) => setForm({ ...form, raisonSociale: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">NIF</label>
+                  <label className="text-sm text-gray-600">NIF *</label>
                   <input className="mt-1 w-full border rounded-lg px-3 py-2" value={form.nif} onChange={(e) => setForm({ ...form, nif: e.target.value })} />
                 </div>
                 <div>
@@ -427,15 +547,15 @@ const SuppliersModule: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">Régime fiscal</label>
-                  <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.regimeFiscal} onChange={(e) => setForm({ ...form, regimeFiscal: e.target.value })}>
-                    <option>Réel Normal</option>
-                    <option>Réel Simplifié</option>
-                    <option>Forfait</option>
+                  <select className="mt-1 w-full border rounded-lg px-3 py-2" value={form.regimeFiscal} onChange={(e) => setForm({ ...form, regimeFiscal: e.target.value as any })}>
+                    <option value="Réel avec TVA">Réel avec TVA</option>
+                    <option value="Exonéré de la TVA">Exonéré de la TVA</option>
+                    <option value="Sans TVA">Sans TVA</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="text-sm text-gray-600">Adresse</label>
-                  <input className="mt-1 w-full border rounded-lg px-3 py-2" value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
+                  <label className="text-sm text-gray-600">Adresse complète (Quartier, ville, etc.)</label>
+                  <textarea className="mt-1 w-full border rounded-lg px-3 py-2" rows={2} value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">Téléphone</label>
@@ -444,6 +564,10 @@ const SuppliersModule: React.FC = () => {
                 <div>
                   <label className="text-sm text-gray-600">Email</label>
                   <input type="email" className="mt-1 w-full border rounded-lg px-3 py-2" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Groupe fournisseur</label>
+                  <input className="mt-1 w-full border rounded-lg px-3 py-2" value={form.groupeFour} onChange={(e) => setForm({ ...form, groupeFour: e.target.value })} placeholder="Ex: Matériaux de construction & Quincaillerie" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-sm text-gray-600">Produits/Services (séparés par des virgules)</label>
@@ -454,7 +578,10 @@ const SuppliersModule: React.FC = () => {
             <div className="px-6 py-4 bg-gray-50 flex justify-end gap-2">
               <button className="px-4 py-2 rounded-lg border" onClick={() => setShowAddModal(false)}>Annuler</button>
               <button className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700" onClick={() => {
-                       if (!form.raisonSociale) { alert('Raison sociale requise'); return; }
+                       if (!form.raisonSociale || !form.nif) { 
+                         alert('Raison sociale et NIF sont requis'); 
+                         return; 
+                       }
                 const produits = form.produits.split(',').map(p => p.trim()).filter(Boolean);
                 if (editingId) {
                          handleUpdateSupplier(editingId, { ...form, produits });
@@ -462,6 +589,19 @@ const SuppliersModule: React.FC = () => {
                          handleAddSupplier({ ...form, produits });
                 }
                 setShowAddModal(false);
+                setForm({ 
+                  type: 'Societe',
+                  classification: 'National',
+                  raisonSociale: '', 
+                  nif: '', 
+                  rccm: '', 
+                  adresse: '', 
+                  telephone: '', 
+                  email: '', 
+                  regimeFiscal: 'Réel avec TVA', 
+                  groupeFour: '',
+                  produits: '' 
+                });
               }}>Enregistrer</button>
             </div>
           </div>

@@ -51,12 +51,29 @@
 
 #### **6. Module Articles et Catalogue**
 - ✅ Système de catégories hiérarchiques
-- ✅ Gestion des articles avec classification avancée
-- ✅ Répertoire d'articles intégré
-- ✅ Système de lots et stock
+- ✅ Gestion des articles avec classification avancée (Domaines: Ameublements, Informatiques, Fournitures de bureau)
+- ✅ Répertoire d'articles intégré (79 articles par défaut)
+- ✅ Gestion des prix (PM, LI, LS) et unités de mesure
+- ✅ Filtrage par domaine et catégorie
 - ✅ Intégration avec la facturation
 
-#### **7. Système de Chat Temps Réel Avancé**
+#### **7. Module Bulletins de Paie**
+- ✅ Création et gestion des bulletins de paie
+- ✅ Calcul automatique (salaire brut, net, cotisations, taxes)
+- ✅ Gestion des heures supplémentaires et primes
+- ✅ Statistiques détaillées (totaux, moyennes)
+- ✅ Impression professionnelle des bulletins
+- ✅ Export PDF des bulletins
+
+#### **8. Module Paramètres et Configuration**
+- ✅ Gestion des informations de l'entreprise
+- ✅ **Gestion des comptes bancaires** (multi-comptes)
+- ✅ Informations bancaires complètes (IBAN, SWIFT, etc.)
+- ✅ Sélection de compte par défaut
+- ✅ Intégration avec le module de facturation
+- ✅ Configuration générale de l'application
+
+#### **9. Système de Chat Temps Réel Avancé (Espace EDIBA)**
 - ✅ Interface WhatsApp-like moderne et élégante
 - ✅ Messages texte avec formatage avancé (gras, italique, souligné, barré, code)
 - ✅ Partage de fichiers et images avec prévisualisation
@@ -73,14 +90,33 @@
 - ✅ **Service Worker pour notifications en arrière-plan**
 - ✅ **Gestion des autorisations audio/vidéo**
 
-#### **8. Système de Sécurité Avancé**
+#### **10. Système de Sauvegardes**
+- ✅ Sauvegarde complète des données
+- ✅ Restauration de sauvegardes
+- ✅ Import/Export de sauvegardes
+- ✅ Sauvegarde automatique programmée
+- ✅ Gestion de l'espace de stockage
+
+#### **11. Gestion des Exercices Fiscaux**
+- ✅ Création et gestion d'exercices fiscaux
+- ✅ Clôture et verrouillage des exercices
+- ✅ Statistiques par exercice
+- ✅ Changement d'exercice courant
+
+#### **12. Journal d'Activité**
+- ✅ Traçabilité complète des actions utilisateurs
+- ✅ Filtres par utilisateur, module, action, période
+- ✅ Export CSV et JSON
+- ✅ Nettoyage automatique des anciennes activités
+
+#### **13. Système de Sécurité Avancé**
 - ✅ Gestion des rôles (Admin, Comptable, Commercial, Lecture)
 - ✅ Permissions granulaires par module
 - ✅ Journal d'activité complet
 - ✅ Chiffrement des données sensibles
 - ✅ Gestion des sessions sécurisées
 
-#### **9. Fonctionnalités Modernes**
+#### **14. Fonctionnalités Modernes**
 - ✅ PWA (Progressive Web App)
 - ✅ Mode hors ligne
 - ✅ Interface responsive
@@ -88,7 +124,7 @@
 - ✅ Notifications en temps réel
 - ✅ Sauvegarde automatique
 
-#### **10. Système de Notifications Push Avancé**
+#### **15. Système de Notifications Push Avancé**
 - ✅ **Service Worker intégré** pour notifications en arrière-plan
 - ✅ **Notifications push pour appels entrants** avec actions directes
 - ✅ **Gestion automatique des autorisations** utilisateur

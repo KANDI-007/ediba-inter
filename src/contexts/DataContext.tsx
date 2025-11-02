@@ -61,13 +61,16 @@ export interface SupplierArticle {
 
 export interface SupplierEntity {
   id: string;
+  type?: 'Societe' | 'Particulier'; // Type de fournisseur
   raisonSociale: string;
   nif: string;
   rccm?: string;
-  adresse?: string;
+  adresse?: string; // Adresse complète incluant quartier, ville, etc.
   telephone?: string;
   email?: string;
-  regimeFiscal?: string;
+  regimeFiscal?: 'Réel avec TVA' | 'Exonéré de la TVA' | 'Sans TVA' | 'Réel Normal' | 'Réel Simplifié' | 'Forfait'; // Nouveaux régimes + compatibilité
+  classification?: 'National' | 'Particulier' | 'Etranger'; // Classification du fournisseur
+  groupeFour?: string; // Groupe fournisseur / Catégorie d'activité
   produits?: string[]; // legacy
   articles?: SupplierArticle[];
   delaiPaiement?: string; // e.g., '30 jours'
@@ -76,17 +79,19 @@ export interface SupplierEntity {
 
 export interface Client {
   id: string;
+  type: 'Societe' | 'ONG' | 'Particulier'; // Type de client
   raisonSociale: string;
   nomCommercial?: string;
-  nif: string;
+  nif: string; // Peut être vide
   rccm?: string;
-  adresse: string;
+  adresse: string; // Adresse complète incluant quartier, BP, etc.
   ville: string;
   telephone: string;
   email: string;
   contactPrincipal: string;
   secteurActivite: string;
-  regimeFiscal: 'Réel Normal' | 'Réel Simplifié' | 'Forfait';
+  regimeFiscal: 'Réel avec TVA' | 'Exonéré de la TVA' | 'Sans TVA' | 'Réel Normal' | 'Réel Simplifié' | 'Forfait'; // Nouveaux régimes + compatibilité
+  classification: 'National' | 'Particulier'; // Classification du client
   delaiPaiement: number; // en jours
   remise: number; // en pourcentage
   limiteCredit: number;
@@ -186,6 +191,9 @@ export interface Article {
   name: string;
   description?: string;
   unitPrice?: number;
+  domain?: string; // Nouveau champ: Domaine (Ameublements, Informatiques, Fournitures de bureau)
+  lowerLimitPrice?: number; // Nouveau champ: Limite inférieure de prix (LI)
+  upperLimitPrice?: number; // Nouveau champ: Limite supérieure de prix (LS)
   lotId?: string;
   categoryId?: string; // Référence vers ArticleCategory
   sku?: string;
@@ -400,29 +408,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       
-      // Fournisseurs fréquents par défaut
+            // Fournisseurs fréquents par défaut - Liste complète avec vraies informations exactes
       const frequentSuppliers = [
-        { raisonSociale: 'Ste L WATT', nif: 'NIF-LW-001', rccm: 'RCCM-LW-001', adresse: 'Lomé', telephone: '+228 22 21 20 01', email: 'contact@lwatt.tg', regimeFiscal: 'Réel Normal', produits: ['Matériel électrique'] },
-        { raisonSociale: 'CCT-BATIMENT', nif: 'NIF-CCT-001', rccm: 'RCCM-CCT-001', adresse: 'Lomé', telephone: '+228 22 21 20 02', email: 'contact@cct-batiment.tg', regimeFiscal: 'Réel Normal', produits: ['Matériaux de construction'] },
-        { raisonSociale: 'LUMCHRIST-AMOFIA SARL', nif: 'NIF-LA-001', rccm: 'RCCM-LA-001', adresse: 'Lomé', telephone: '+228 22 21 20 03', email: 'contact@lumchrist.tg', regimeFiscal: 'Réel Normal', produits: ['Éclairage'] },
-        { raisonSociale: 'CHINA MALL', nif: 'NIF-CM-001', rccm: 'RCCM-CM-001', adresse: 'Lomé', telephone: '+228 22 21 20 04', email: 'contact@chinamall.tg', regimeFiscal: 'Réel Normal', produits: ['Divers'] },
-        { raisonSociale: 'Galerie Confortium', nif: 'NIF-GC-001', rccm: 'RCCM-GC-001', adresse: 'Lomé', telephone: '+228 22 21 20 05', email: 'contact@confortium.tg', regimeFiscal: 'Réel Normal', produits: ['Mobilier'] },
-        { raisonSociale: 'Ets AMERICAIN', nif: 'NIF-EA-001', rccm: 'RCCM-EA-001', adresse: 'Lomé', telephone: '+228 22 21 20 06', email: 'contact@americain.tg', regimeFiscal: 'Réel Normal', produits: ['Divers'] },
-        { raisonSociale: 'DONSEN-ALU', nif: 'NIF-DA-001', rccm: 'RCCM-DA-001', adresse: 'Lomé', telephone: '+228 22 21 20 07', email: 'contact@donsen-alu.tg', regimeFiscal: 'Réel Normal', produits: ['Aluminium'] },
-        { raisonSociale: 'SOCIETE SOTIMEX SARL', nif: 'NIF-SS-001', rccm: 'RCCM-SS-001', adresse: 'Lomé', telephone: '+228 22 21 20 08', email: 'contact@sotimex.tg', regimeFiscal: 'Réel Normal', produits: ['Import-Export'] },
-        { raisonSociale: 'CHAMPION', nif: 'NIF-CH-001', rccm: 'RCCM-CH-001', adresse: 'Lomé', telephone: '+228 22 21 20 09', email: 'contact@champion.tg', regimeFiscal: 'Réel Normal', produits: ['Divers'] },
-        { raisonSociale: 'Ste Papeterie Centrale', nif: 'NIF-SPC-001', rccm: 'RCCM-SPC-001', adresse: 'Lomé', telephone: '+228 22 21 20 10', email: 'contact@papeterie.tg', regimeFiscal: 'Réel Normal', produits: ['Papeterie'] },
-        { raisonSociale: 'LIGHT CONSEILS SARL U', nif: 'NIF-LC-001', rccm: 'RCCM-LC-001', adresse: 'Lomé', telephone: '+228 22 21 20 11', email: 'contact@lightconseils.tg', regimeFiscal: 'Réel Normal', produits: ['Conseils'] },
-        { raisonSociale: 'ATLAS Services', nif: 'NIF-AS-001', rccm: 'RCCM-AS-001', adresse: 'Lomé', telephone: '+228 22 21 20 12', email: 'contact@atlas.tg', regimeFiscal: 'Réel Normal', produits: ['Services'] },
-        { raisonSociale: 'Kilimandjaro Services', nif: 'NIF-KS-001', rccm: 'RCCM-KS-001', adresse: 'Lomé', telephone: '+228 22 21 20 13', email: 'contact@kilimandjaro.tg', regimeFiscal: 'Réel Normal', produits: ['Services'] },
-        { raisonSociale: 'ORCA SARL', nif: 'NIF-OR-001', rccm: 'RCCM-OR-001', adresse: 'Lomé', telephone: '+228 22 21 20 14', email: 'contact@orca.tg', regimeFiscal: 'Réel Normal', produits: ['Divers'] },
-        { raisonSociale: 'ZIP Auto', nif: 'NIF-ZA-001', rccm: 'RCCM-ZA-001', adresse: 'Lomé', telephone: '+228 22 21 20 15', email: 'contact@zipauto.tg', regimeFiscal: 'Réel Normal', produits: ['Automobile'] },
-        { raisonSociale: 'Vlisco African Company To', nif: 'NIF-VA-001', rccm: 'RCCM-VA-001', adresse: 'Lomé', telephone: '+228 22 21 20 16', email: 'contact@vlisco.tg', regimeFiscal: 'Réel Normal', produits: ['Textile'] },
-        { raisonSociale: 'SGIT', nif: 'NIF-SG-001', rccm: 'RCCM-SG-001', adresse: 'Lomé', telephone: '+228 22 21 20 17', email: 'contact@sgit.tg', regimeFiscal: 'Réel Normal', produits: ['Technologie'] },
-        { raisonSociale: 'Ste Plural Sarl u', nif: 'NIF-SP-001', rccm: 'RCCM-SP-001', adresse: 'Lomé', telephone: '+228 22 21 20 18', email: 'contact@plural.tg', regimeFiscal: 'Réel Normal', produits: ['Divers'] },
-        { raisonSociale: 'SPCG PRO BURO', nif: 'NIF-SB-001', rccm: 'RCCM-SB-001', adresse: 'Lomé', telephone: '+228 22 21 20 19', email: 'contact@spcg.tg', regimeFiscal: 'Réel Normal', produits: ['Bureau'] },
-        { raisonSociale: 'TECHNO', nif: 'NIF-TE-001', rccm: 'RCCM-TE-001', adresse: 'Lomé', telephone: '+228 22 21 20 20', email: 'contact@techno.tg', regimeFiscal: 'Réel Normal', produits: ['Technologie'] },
-        { raisonSociale: 'CO-TO AUTO SA', nif: 'NIF-CA-001', rccm: 'RCCM-CA-001', adresse: 'Lomé', telephone: '+228 22 21 20 21', email: 'contact@coto.tg', regimeFiscal: 'Réel Normal', produits: ['Automobile'] }
+        { type: 'Societe', nif: '1000166149', raisonSociale: 'CCT-BATIMENT', telephone: '22 21 50 48/ 22 22 53 71', adresse: '606, Rue Koumoré, Assivito, Lomé, Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Matériaux de construction & Quincaillerie' },
+        { type: 'Societe', nif: '1000116343', raisonSociale: 'STE LE WATT', telephone: '22 22 27 74/ 22 21 15 81', adresse: '7, Rue Koumoré, Immeuble S3G, Assivito – BP 3112, Lomé, Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Matériaux de construction & Quincaillerie' },
+        { type: 'Societe', nif: '1000387083', raisonSociale: 'LUMCHRIST-AMOFIA SARL', telephone: '92 05 11 83/ 99 09 28 00', adresse: 'Lomé – Quartier Avédji Elavanyon, Rue Hôtel Léo 2000, Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Matériaux de construction & Quincaillerie' },
+        { type: 'Societe', nif: '1001875765', raisonSociale: 'CHINA MALL', telephone: '71 34 32 12', adresse: 'Hédzranawé et Agoè Zongo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Matériaux de construction & Quincaillerie' },
+        { type: 'Societe', nif: '1000173826', raisonSociale: 'Galerie Comfortium', telephone: '22 20 25 26/ 22 21 99 90', adresse: '1840, Boulevard circulaire - Quartier Nyékonakpoé; Lomé; BP 3112', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'GALERIE DE MEUBLES ET ELEMENTS DECORATIFS' },
+        { type: 'Societe', nif: '1000172656', raisonSociale: 'ETS AMERICAIN', telephone: '93 75 75 45/ 99 48 13 58', adresse: 'Rue Jeanne d\'Arc, Non loin de la Phcie du Centre et la Banque Atlantique Assivito Lomé - Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Matériaux de construction & Quincaillerie' },
+        { type: 'Societe', nif: '1000126738', raisonSociale: 'DONSEN-ALU', telephone: '(+228) 70 18 12 64 / (+228) 92 18 64 68', adresse: 'Av. de 24 Janvier, non loin de Monté Christo Abobokomé Lomé - Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Matériaux de construction & Quincaillerie' },
+        { type: 'Societe', nif: '1001895203', raisonSociale: 'KILIMANDJARO Services', telephone: '', adresse: 'Face CERFER, Boulevard De La Paix, Lome, Maritime', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Vente de matériels informatiques' },
+        { type: 'Societe', nif: '1000929215', raisonSociale: 'ATLAS Services', telephone: '', adresse: 'Face CERFER, Boulevard De La Paix, Lome, Maritime', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'Vente de matériels informatiques' },
+        { type: 'Societe', nif: '1000166347', raisonSociale: 'SOCIETE SOTIMEX SARL', telephone: '', adresse: 'Avenue De La Liberation, Lome', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'FOURNITURES DE BUREAUX ET PAPETERIE' },
+        { type: 'Societe', nif: '1000168399', raisonSociale: 'CHAMPION', telephone: '', adresse: '', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'COMMERCE GENERAL' },
+        { type: 'Societe', nif: '1000142389', raisonSociale: 'Ste Papéterie Centrale', telephone: '(+228) 22 20 41 30 / (+228) 22 20 26 28 / (+228) 92 00 38 99 / (+228) 90 04 26 22 / (+228) 91 32 32 93', adresse: 'Av. de la Libération, 630, Rue de la Nouvelle Marche, collée à la Direction de la Tde, en face de Hyundai, Assivito BP 4266 Lomé - Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'FOURNITURES DE BUREAUX ET PAPETERIE' },
+        { type: 'Societe', nif: '1000373319', raisonSociale: 'ORCA SARL', telephone: '93 38 11 88', adresse: '', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'GALERIE DE MEUBLES ET ELEMENTS DECORATIFS' },
+        { type: 'Societe', nif: '', raisonSociale: 'SAIMEX', telephone: '', adresse: '', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'GALERIE DE MEUBLES ET ELEMENTS DECORATIFS' },
+        { type: 'Societe', nif: '1000166212', raisonSociale: 'CENPATO', telephone: '', adresse: '', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'FOURNITURES DE BUREAUX ET PAPETERIE' },
+        { type: 'Societe', nif: '', raisonSociale: 'FLIGHT EAGLE', telephone: '96 74 75 76 / flightgalerie@hotmail.com', adresse: '97 74 75 76 / flightgalerie@hotmail.com', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'GALERIE DE MEUBLES ET ELEMENTS DECORATIFS' },
+        { type: 'Societe', nif: '', raisonSociale: 'RAMCO', telephone: '07 Avenue du 24 Fevrier, + 228 22 21 40 78', adresse: '8 Avenue du 24 Fevrier, + 228 22 21 40 78', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'COMMERCE GENERAL' },
+        { type: 'Societe', nif: '1000174492', raisonSociale: 'SPCG-PRO BURO', telephone: '22 22 05 60/ 22 22 05 20', adresse: 'SPCG Pro Buro Rue de Kourome, Lomé, Togo', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'FOURNITURES DE BUREAUX ET PAPETERIE' },
+        { type: 'Societe', nif: '1000211277', raisonSociale: 'TECHNO', telephone: 'Tél: +228 22 22 49 46 / +228 22 22 49 45', adresse: '9 Av Sylvanus Olympio. Lomé BP 14263', regimeFiscal: 'Réel avec TVA', classification: 'National', groupeFour: 'FOURNITURES DE BUREAUX ET PAPETERIE' },
+        { type: 'Particulier', nif: '', raisonSociale: 'Holly', telephone: '', adresse: '', regimeFiscal: '', classification: 'Etranger', groupeFour: '' },
+        { type: 'Particulier', nif: '', raisonSociale: 'Jill', telephone: '', adresse: '', regimeFiscal: '', classification: 'Etranger', groupeFour: '' }
       ];
       
       // Clients par défaut
@@ -889,6 +897,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         {
           id: 'CLI-021',
+          type: 'Particulier',
           raisonSociale: 'ETS Kombaté',
           nomCommercial: 'ETS Kombaté',
           nif: 'NIF-KOMBATE-021',
@@ -900,6 +909,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           contactPrincipal: 'Direction',
           secteurActivite: 'Entreprise Privée',
           regimeFiscal: 'Réel Normal' as const,
+          classification: 'Particulier',
           delaiPaiement: 30,
           remise: 0,
           limiteCredit: 0,
@@ -935,6 +945,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         {
           id: 'CLI-023',
+          type: 'ONG',
           raisonSociale: 'ONG Espoir',
           nomCommercial: 'ONG Espoir',
           nif: 'NIF-ESPOIR-023',
@@ -946,6 +957,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           contactPrincipal: 'Direction',
           secteurActivite: 'ONG',
           regimeFiscal: 'Réel Normal' as const,
+          classification: 'National',
           delaiPaiement: 30,
           remise: 0,
           limiteCredit: 0,
@@ -1065,6 +1077,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dateCreation: new Date().toISOString()
         },
         {
+          id: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          name: 'Tissus et revêtements',
+          description: 'Tissus occultants, voilages, cuir, simili cuir, tissus salon',
+          icon: '🎨',
+          color: 'bg-pink-100 text-pink-800',
+          parentId: 'CAT-AMEUBLEMENT',
+          dateCreation: new Date().toISOString()
+        },
+        {
           id: 'CAT-BOIS',
           name: 'Bois et dérivés',
           description: 'Bois massif, panneaux, placages',
@@ -1079,6 +1100,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: 'Charnières, poignées, systèmes de fixation',
           icon: '🔧',
           color: 'bg-gray-100 text-gray-800',
+          parentId: 'CAT-AMEUBLEMENT',
+          dateCreation: new Date().toISOString()
+        },
+        {
+          id: 'CAT-ACCESSOIRES-RIDEAUX',
+          name: 'Accessoires rideaux',
+          description: 'Ruflette, bande, oeillets, tringles, rails, stores',
+          icon: '🪟',
+          color: 'bg-blue-100 text-blue-800',
           parentId: 'CAT-AMEUBLEMENT',
           dateCreation: new Date().toISOString()
         },
@@ -1114,6 +1144,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: 'CAT-MATERIEL',
           name: 'Matériel informatique & accessoires',
           description: 'Antivirus, multiprises, clés USB, disques durs',
+          icon: '💾',
+          color: 'bg-indigo-100 text-indigo-800',
+          parentId: 'CAT-INFORMATIQUE',
+          dateCreation: new Date().toISOString()
+        },
+        {
+          id: 'CAT-MATERIELS-INFORMATIQUES',
+          name: 'Matériels informatiques',
+          description: 'Antivirus, multiprises parafoudre, clés USB, disques durs, onduleurs',
           icon: '💾',
           color: 'bg-indigo-100 text-indigo-800',
           parentId: 'CAT-INFORMATIQUE',
@@ -1164,1141 +1203,1202 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           color: 'bg-slate-100 text-slate-800',
           parentId: 'CAT-FOURNITURES',
           dateCreation: new Date().toISOString()
+        },
+        {
+          id: 'CAT-FOURNITURES-BUREAU',
+          name: 'Fournitures de bureau',
+          description: 'Toutes les fournitures de bureau : papiers, chemises, enveloppes, stylos, registres',
+          icon: '🗂️',
+          color: 'bg-green-100 text-green-800',
+          parentId: 'CAT-FOURNITURES',
+          dateCreation: new Date().toISOString()
         }
       ];
 
       // Articles d'exemple par catégorie
       const defaultArticles: Article[] = [
-        // Articles Ameublement - Tissus et revêtements
         {
-          id: 'ART-TISSUS-001',
-          name: 'Tissu coton blanc 150cm',
-          description: 'Tissu coton blanc pour ameublement, largeur 150cm',
+          id: 'ART-001',
+          name: "Tissus occultant Sup",
+          description: "Tissus occultant Sup - Tissus et revêtements",
+          unitPrice: 4000,
+          domain: "Ameublements",
+          lowerLimitPrice: 3500,
+          upperLimitPrice: 6000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-002',
+          name: "Tissus occultant Moy",
+          description: "Tissus occultant Moy - Tissus et revêtements",
           unitPrice: 2500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'TISS-COT-150',
-          material: 'Coton',
-          color: 'Blanc',
-          unit: 'mètre',
+          domain: "Ameublements",
+          lowerLimitPrice: 3000,
+          upperLimitPrice: 4000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TISSUS-002',
-          name: 'Velours bleu marine',
-          description: 'Velours bleu marine pour fauteuils et canapés',
-          unitPrice: 4500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'VEL-BLEU-001',
-          material: 'Velours',
-          color: 'Bleu marine',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-003',
-          name: 'Cuir synthétique noir',
-          description: 'Cuir synthétique noir pour mobilier moderne',
-          unitPrice: 6500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'CUIR-SYN-001',
-          material: 'Cuir synthétique',
-          color: 'Noir',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Ameublement - Bois et dérivés
-        {
-          id: 'ART-BOIS-001',
-          name: 'Panneau MDF 18mm',
-          description: 'Panneau MDF 18mm pour fabrication de meubles',
-          unitPrice: 12000,
-          categoryId: 'CAT-BOIS',
-          sku: 'MDF-18-001',
-          material: 'MDF',
-          color: 'Naturel',
-          unit: 'm²',
-          dimensions: '122x244cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-002',
-          name: 'Chêne massif 25mm',
-          description: 'Planche chêne massif 25mm pour table et bureau',
-          unitPrice: 35000,
-          categoryId: 'CAT-BOIS',
-          sku: 'CHENE-25-001',
-          material: 'Chêne massif',
-          color: 'Chêne naturel',
-          unit: 'm²',
-          dimensions: '20x200cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Informatique - Consommables
-        {
-          id: 'ART-CONSO-001',
-          name: 'Cartouche HP 207A',
-          description: 'Cartouche d\'encre HP 207A pour imprimante LaserJet',
-          unitPrice: 25000,
-          categoryId: 'CAT-CONSOMMABLES',
-          sku: 'HP-207A',
-          brand: 'HP',
-          model: '207A',
-          color: 'Noir',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-CONSO-002',
-          name: 'Toner Canon CEXV 32',
-          description: 'Toner Canon CEXV 32 pour imprimante multifonction',
-          unitPrice: 18000,
-          categoryId: 'CAT-CONSOMMABLES',
-          sku: 'CAN-CEXV32',
-          brand: 'Canon',
-          model: 'CEXV 32',
-          color: 'Cyan',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-CONSO-003',
-          name: 'Toner Lenovo LT 245H',
-          description: 'Toner Lenovo LT 245H pour imprimante laser',
-          unitPrice: 22000,
-          categoryId: 'CAT-CONSOMMABLES',
-          sku: 'LEN-LT245H',
-          brand: 'Lenovo',
-          model: 'LT 245H',
-          color: 'Noir',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Informatique - Matériel
-        {
-          id: 'ART-MAT-001',
-          name: 'Antivirus Kaspersky 4 postes',
-          description: 'Licence antivirus Kaspersky pour 4 postes',
-          unitPrice: 45000,
-          categoryId: 'CAT-MATERIEL',
-          sku: 'KAS-4P-001',
-          brand: 'Kaspersky',
-          model: 'Internet Security',
-          unit: 'licence',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-MAT-002',
-          name: 'Clé USB 32Go',
-          description: 'Clé USB 32Go haute vitesse',
-          unitPrice: 8000,
-          categoryId: 'CAT-MATERIEL',
-          sku: 'USB-32G-001',
-          brand: 'SanDisk',
-          model: 'Ultra',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-MAT-003',
-          name: 'Disque dur externe 1To',
-          description: 'Disque dur externe 1To USB 3.0',
-          unitPrice: 35000,
-          categoryId: 'CAT-MATERIEL',
-          sku: 'HDD-1T-001',
-          brand: 'Seagate',
-          model: 'Backup Plus',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Fournitures de bureau - Papeterie
-        {
-          id: 'ART-PAP-001',
-          name: 'Rame papier Paperline 80g',
-          description: 'Rame de papier blanc 80g, 500 feuilles',
-          unitPrice: 2500,
-          categoryId: 'CAT-PAPETERIE',
-          sku: 'PAP-80G-001',
-          brand: 'Paperline',
-          color: 'Blanc',
-          unit: 'rame',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-PAP-002',
-          name: 'Cahier de transmission 200 pages',
-          description: 'Cahier de transmission 200 pages, format A4',
+          id: 'ART-003',
+          name: "Tissus non occultant",
+          description: "Tissus non occultant - Tissus et revêtements",
           unitPrice: 1500,
-          categoryId: 'CAT-PAPETERIE',
-          sku: 'CAH-200-001',
-          brand: 'Clairefontaine',
-          color: 'Blanc',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Fournitures de bureau - Écriture
-        {
-          id: 'ART-ECR-001',
-          name: 'Stylo Luxor Focus bleu',
-          description: 'Stylo bille Luxor Focus, encre bleue',
-          unitPrice: 500,
-          categoryId: 'CAT-ECRITURE',
-          sku: 'STY-LUX-BLEU',
-          brand: 'Luxor',
-          model: 'Focus',
-          color: 'Bleu',
-          unit: 'pièce',
+          domain: "Ameublements",
+          lowerLimitPrice: 2000,
+          upperLimitPrice: 2500,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ECR-002',
-          name: 'Stylo Schneider rouge',
-          description: 'Stylo bille Schneider, encre rouge',
-          unitPrice: 450,
-          categoryId: 'CAT-ECRITURE',
-          sku: 'STY-SCH-ROUGE',
-          brand: 'Schneider',
-          color: 'Rouge',
-          unit: 'pièce',
+          id: 'ART-004',
+          name: "Voilage leger",
+          description: "Voilage leger - Tissus et revêtements",
+          unitPrice: 1500,
+          domain: "Ameublements",
+          lowerLimitPrice: 2000,
+          upperLimitPrice: 3000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ECR-003',
-          name: 'Correcteur PENN fluid',
-          description: 'Correcteur liquide PENN, 20ml',
-          unitPrice: 1200,
-          categoryId: 'CAT-ECRITURE',
-          sku: 'COR-PENN-001',
-          brand: 'PENN',
-          model: 'Fluid',
-          color: 'Blanc',
-          unit: 'pièce',
+          id: 'ART-005',
+          name: "Voilage lourd",
+          description: "Voilage lourd - Tissus et revêtements",
+          unitPrice: 2500,
+          domain: "Ameublements",
+          lowerLimitPrice: 3000,
+          upperLimitPrice: 3500,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
-        // Articles Fournitures de bureau - Enveloppes
         {
-          id: 'ART-ENV-001',
-          name: 'Enveloppe A4 kaki',
-          description: 'Enveloppe A4 couleur kaki, 100 unités',
+          id: 'ART-006',
+          name: "Simili cuir",
+          description: "Simili cuir - Tissus et revêtements",
           unitPrice: 3000,
-          categoryId: 'CAT-ENVELOPPES',
-          sku: 'ENV-A4-KAKI',
-          color: 'Kaki',
-          size: 'A4',
-          unit: 'paquet',
+          domain: "Ameublements",
+          lowerLimitPrice: 4000,
+          upperLimitPrice: 4500,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ENV-002',
-          name: 'Enveloppe A5 kaki',
-          description: 'Enveloppe A5 couleur kaki, 100 unités',
+          id: 'ART-007',
+          name: "Cuir",
+          description: "Cuir - Tissus et revêtements",
+          unitPrice: 6000,
+          domain: "Ameublements",
+          lowerLimitPrice: 8000,
+          upperLimitPrice: 9000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-008',
+          name: "popeline",
+          description: "popeline - Tissus et revêtements",
           unitPrice: 2000,
-          categoryId: 'CAT-ENVELOPPES',
-          sku: 'ENV-A5-KAKI',
-          color: 'Kaki',
-          size: 'A5',
-          unit: 'paquet',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Fournitures de bureau - Quincaillerie
-        {
-          id: 'ART-QUIN-001',
-          name: 'Agrafes 24/6',
-          description: 'Boîte d\'agrafes 24/6, 1000 unités',
-          unitPrice: 1500,
-          categoryId: 'CAT-QUINCAILLERIE',
-          sku: 'AGR-24-6-001',
-          unit: 'boîte',
+          domain: "Ameublements",
+          lowerLimitPrice: 2500,
+          upperLimitPrice: 3500,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-QUIN-002',
-          name: 'Porte Bic grillagé noir',
-          description: 'Porte Bic grillagé couleur noire',
-          unitPrice: 800,
-          categoryId: 'CAT-QUINCAILLERIE',
-          sku: 'PB-GRILL-NOIR',
-          color: 'Noir',
-          unit: 'pièce',
+          id: 'ART-009',
+          name: "Tissus salon lin lourd",
+          description: "Tissus salon lin lourd - Tissus et revêtements",
+          unitPrice: 3000,
+          domain: "Ameublements",
+          lowerLimitPrice: 4000,
+          upperLimitPrice: 6000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
-        // Articles Ameublement - Tissus et revêtements (complet)
         {
-          id: 'ART-TISSUS-004',
-          name: 'Tissu lin naturel',
-          description: 'Tissu lin naturel pour ameublement, largeur 150cm',
+          id: 'ART-010',
+          name: "Tissus salon lin leger",
+          description: "Tissus salon lin leger - Tissus et revêtements",
+          unitPrice: 4000,
+          domain: "Ameublements",
+          lowerLimitPrice: 4500,
+          upperLimitPrice: 5000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-011',
+          name: "Tissus salon velours lourd",
+          description: "Tissus salon velours lourd - Tissus et revêtements",
+          unitPrice: 4500,
+          domain: "Ameublements",
+          lowerLimitPrice: 5500,
+          upperLimitPrice: 7000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-012',
+          name: "Tissus salon velours leger",
+          description: "Tissus salon velours leger - Tissus et revêtements",
+          unitPrice: 3000,
+          domain: "Ameublements",
+          lowerLimitPrice: 4500,
+          upperLimitPrice: 5000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-013',
+          name: "Tissus salon coton lourd",
+          description: "Tissus salon coton lourd - Tissus et revêtements",
           unitPrice: 3500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'TISS-LIN-150',
-          material: 'Lin',
-          color: 'Naturel',
-          unit: 'mètre',
+          domain: "Ameublements",
+          lowerLimitPrice: 6000,
+          upperLimitPrice: 7000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TISSUS-005',
-          name: 'Soie rouge bordeaux',
-          description: 'Tissu soie rouge bordeaux pour rideaux et coussins',
-          unitPrice: 8500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'SOIE-ROUGE-001',
-          material: 'Soie',
-          color: 'Rouge bordeaux',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-006',
-          name: 'Polyester gris anthracite',
-          description: 'Tissu polyester gris anthracite, résistant',
-          unitPrice: 1800,
-          categoryId: 'CAT-TISSUS',
-          sku: 'POLY-GRIS-001',
-          material: 'Polyester',
-          color: 'Gris anthracite',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-007',
-          name: 'Vinyle noir brillant',
-          description: 'Vinyle noir brillant pour mobilier moderne',
-          unitPrice: 4200,
-          categoryId: 'CAT-TISSUS',
-          sku: 'VINYL-NOIR-001',
-          material: 'Vinyle',
-          color: 'Noir brillant',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-008',
-          name: 'Skaï beige',
-          description: 'Skaï beige pour fauteuils et canapés',
-          unitPrice: 3200,
-          categoryId: 'CAT-TISSUS',
-          sku: 'SKAI-BEIGE-001',
-          material: 'Skaï',
-          color: 'Beige',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-009',
-          name: 'Papier peint fleuri',
-          description: 'Papier peint à motif floral, rouleau 10m',
-          unitPrice: 4500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'PP-FLEURI-001',
-          material: 'Papier peint',
-          color: 'Multicolore',
-          unit: 'rouleau',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-010',
-          name: 'Tissu mural géométrique',
-          description: 'Tissu mural à motif géométrique moderne',
-          unitPrice: 6500,
-          categoryId: 'CAT-TISSUS',
-          sku: 'TM-GEO-001',
-          material: 'Tissu mural',
-          color: 'Gris et blanc',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-TISSUS-011',
-          name: 'Lambris textile acoustique',
-          description: 'Lambris textile acoustique pour isolation phonique',
-          unitPrice: 12000,
-          categoryId: 'CAT-TISSUS',
-          sku: 'LAMB-ACOU-001',
-          material: 'Lambris textile',
-          color: 'Gris foncé',
-          unit: 'm²',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Ameublement - Bois et dérivés (complet)
-        {
-          id: 'ART-BOIS-003',
-          name: 'Hêtre massif 30mm',
-          description: 'Planche hêtre massif 30mm pour mobilier haut de gamme',
-          unitPrice: 28000,
-          categoryId: 'CAT-BOIS',
-          sku: 'HETRE-30-001',
-          material: 'Hêtre massif',
-          color: 'Hêtre clair',
-          unit: 'm²',
-          dimensions: '25x200cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-004',
-          name: 'Acajou massif 20mm',
-          description: 'Planche acajou massif 20mm pour meubles de luxe',
-          unitPrice: 45000,
-          categoryId: 'CAT-BOIS',
-          sku: 'ACAJOU-20-001',
-          material: 'Acajou massif',
-          color: 'Acajou rouge',
-          unit: 'm²',
-          dimensions: '20x150cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-005',
-          name: 'Teck massif 25mm',
-          description: 'Planche teck massif 25mm pour mobilier extérieur',
-          unitPrice: 55000,
-          categoryId: 'CAT-BOIS',
-          sku: 'TECK-25-001',
-          material: 'Teck massif',
-          color: 'Teck doré',
-          unit: 'm²',
-          dimensions: '25x200cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-006',
-          name: 'Pin massif 18mm',
-          description: 'Planche pin massif 18mm pour mobilier rustique',
-          unitPrice: 15000,
-          categoryId: 'CAT-BOIS',
-          sku: 'PIN-18-001',
-          material: 'Pin massif',
-          color: 'Pin clair',
-          unit: 'm²',
-          dimensions: '18x200cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-007',
-          name: 'Noyer massif 22mm',
-          description: 'Planche noyer massif 22mm pour mobilier classique',
-          unitPrice: 38000,
-          categoryId: 'CAT-BOIS',
-          sku: 'NOYER-22-001',
-          material: 'Noyer massif',
-          color: 'Noyer foncé',
-          unit: 'm²',
-          dimensions: '22x180cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-008',
-          name: 'Contreplaqué 15mm',
-          description: 'Panneau contreplaqué 15mm pour construction',
-          unitPrice: 8500,
-          categoryId: 'CAT-BOIS',
-          sku: 'CP-15-001',
-          material: 'Contreplaqué',
-          color: 'Naturel',
-          unit: 'm²',
-          dimensions: '122x244cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-009',
-          name: 'Aggloméré 18mm',
-          description: 'Panneau aggloméré 18mm pour meubles standards',
-          unitPrice: 6500,
-          categoryId: 'CAT-BOIS',
-          sku: 'AGG-18-001',
-          material: 'Aggloméré',
-          color: 'Naturel',
-          unit: 'm²',
-          dimensions: '122x244cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-010',
-          name: 'OSB 12mm',
-          description: 'Panneau OSB 12mm pour construction et aménagement',
-          unitPrice: 4500,
-          categoryId: 'CAT-BOIS',
-          sku: 'OSB-12-001',
-          material: 'OSB',
-          color: 'Naturel',
-          unit: 'm²',
-          dimensions: '122x244cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-011',
-          name: 'Placage chêne',
-          description: 'Placage chêne naturel pour finition de meubles',
+          id: 'ART-014',
+          name: "Tissus salon coton leger",
+          description: "Tissus salon coton leger - Tissus et revêtements",
           unitPrice: 2500,
-          categoryId: 'CAT-BOIS',
-          sku: 'PLAC-CHENE-001',
-          material: 'Placage chêne',
-          color: 'Chêne naturel',
-          unit: 'm²',
+          domain: "Ameublements",
+          lowerLimitPrice: 3000,
+          upperLimitPrice: 4500,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-BOIS-012',
-          name: 'Placage wengé',
-          description: 'Placage wengé exotique pour meubles design',
-          unitPrice: 3500,
-          categoryId: 'CAT-BOIS',
-          sku: 'PLAC-WENGE-001',
-          material: 'Placage wengé',
-          color: 'Wengé foncé',
-          unit: 'm²',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-013',
-          name: 'Placage merisier',
-          description: 'Placage merisier pour finition de meubles classiques',
-          unitPrice: 2800,
-          categoryId: 'CAT-BOIS',
-          sku: 'PLAC-MERISIER-001',
-          material: 'Placage merisier',
-          color: 'Merisier rosé',
-          unit: 'm²',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-014',
-          name: 'Placage érable',
-          description: 'Placage érable clair pour finition moderne',
-          unitPrice: 2200,
-          categoryId: 'CAT-BOIS',
-          sku: 'PLAC-ERABLE-001',
-          material: 'Placage érable',
-          color: 'Érable clair',
-          unit: 'm²',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-015',
-          name: 'Placage noyer',
-          description: 'Placage noyer pour finition de meubles haut de gamme',
-          unitPrice: 3200,
-          categoryId: 'CAT-BOIS',
-          sku: 'PLAC-NOYER-001',
-          material: 'Placage noyer',
-          color: 'Noyer foncé',
-          unit: 'm²',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-016',
-          name: 'Bambou naturel',
-          description: 'Lattes de bambou naturel pour décoration et construction',
-          unitPrice: 1800,
-          categoryId: 'CAT-BOIS',
-          sku: 'BAMBOU-001',
-          material: 'Bambou',
-          color: 'Bambou naturel',
-          unit: 'mètre',
-          dimensions: '2x10cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-017',
-          name: 'Rotin naturel',
-          description: 'Rotin naturel pour mobilier et décoration',
-          unitPrice: 1200,
-          categoryId: 'CAT-BOIS',
-          sku: 'ROTIN-001',
-          material: 'Rotin',
-          color: 'Rotin naturel',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-018',
-          name: 'Osier tressé',
-          description: 'Osier tressé pour paniers et décoration',
-          unitPrice: 800,
-          categoryId: 'CAT-BOIS',
-          sku: 'OSIER-001',
-          material: 'Osier',
-          color: 'Osier naturel',
-          unit: 'mètre',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-019',
-          name: 'Lattes décoratives',
-          description: 'Lattes décoratives en pin pour claustra et séparation',
-          unitPrice: 1500,
-          categoryId: 'CAT-BOIS',
-          sku: 'LATTES-DEC-001',
-          material: 'Pin',
-          color: 'Pin naturel',
-          unit: 'mètre',
-          dimensions: '2x5cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-BOIS-020',
-          name: 'Panneaux acoustiques',
-          description: 'Panneaux acoustiques en bois pour isolation phonique',
-          unitPrice: 8500,
-          categoryId: 'CAT-BOIS',
-          sku: 'PAN-ACOU-001',
-          material: 'Bois traité',
-          color: 'Naturel',
-          unit: 'm²',
-          dimensions: '60x60cm',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Ameublement - Accessoires et quincaillerie (complet)
-        {
-          id: 'ART-ACCESS-001',
-          name: 'Charnières invisibles 35mm',
-          description: 'Charnières invisibles 35mm pour portes de meubles',
-          unitPrice: 2500,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'CHARN-35-001',
-          material: 'Métal',
-          color: 'Argent',
-          unit: 'paire',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-ACCESS-002',
-          name: 'Coulisses à billes 50cm',
-          description: 'Coulisses à billes télescopiques 50cm pour tiroirs',
+          id: 'ART-015',
+          name: "Tissus salon polyester lourd",
+          description: "Tissus salon polyester lourd - Tissus et revêtements",
           unitPrice: 4500,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'COUL-50-001',
-          material: 'Métal et plastique',
-          color: 'Gris',
-          unit: 'paire',
+          domain: "Ameublements",
+          lowerLimitPrice: 5000,
+          upperLimitPrice: 6000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-003',
-          name: 'Amortisseurs de tiroir',
-          description: 'Amortisseurs de tiroir pour fermeture douce',
-          unitPrice: 800,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'AMORT-TIR-001',
-          material: 'Plastique',
-          color: 'Blanc',
-          unit: 'pièce',
+          id: 'ART-016',
+          name: "Tissus salon polyester leger",
+          description: "Tissus salon polyester leger - Tissus et revêtements",
+          unitPrice: 3000,
+          domain: "Ameublements",
+          lowerLimitPrice: 3500,
+          upperLimitPrice: 4000,
+          categoryId: 'CAT-TISSUS-ET-REVÊTEMENTS',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-004',
-          name: 'Poignées bois chêne',
-          description: 'Poignées en bois de chêne pour meubles classiques',
-          unitPrice: 1200,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'POIG-CHENE-001',
-          material: 'Bois de chêne',
-          color: 'Chêne naturel',
-          unit: 'pièce',
+          id: 'ART-017',
+          name: "Ruflette",
+          description: "Ruflette - Accessoires rideaux",
+          unitPrice: 4500,
+          domain: "Ameublements",
+          lowerLimitPrice: 5000,
+          upperLimitPrice: 6000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Rouleau",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-005',
-          name: 'Poignées cuir marron',
-          description: 'Poignées en cuir marron pour meubles de luxe',
-          unitPrice: 1800,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'POIG-CUIR-001',
-          material: 'Cuir',
-          color: 'Marron',
-          unit: 'pièce',
+          id: 'ART-018',
+          name: "Bande",
+          description: "Bande - Accessoires rideaux",
+          unitPrice: 4500,
+          domain: "Ameublements",
+          lowerLimitPrice: 5000,
+          upperLimitPrice: 5500,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Rouleau",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-006',
-          name: 'Pieds réglables métal',
-          description: 'Pieds réglables en métal pour meubles',
-          unitPrice: 1500,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'PIEDS-REG-001',
-          material: 'Métal',
-          color: 'Chrome',
-          unit: 'pièce',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'ART-ACCESS-007',
-          name: 'Pieds plastique blanc',
-          description: 'Pieds en plastique blanc pour meubles légers',
+          id: 'ART-019',
+          name: "oeillets en metal",
+          description: "oeillets en metal - Accessoires rideaux",
           unitPrice: 600,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'PIEDS-PLAST-001',
-          material: 'Plastique',
-          color: 'Blanc',
-          unit: 'pièce',
+          domain: "Ameublements",
+          lowerLimitPrice: 7000,
+          upperLimitPrice: 8000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-008',
-          name: 'Ferrures décoratives bronze',
-          description: 'Ferrures décoratives en bronze pour meubles anciens',
-          unitPrice: 3500,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'FERR-BRONZE-001',
-          material: 'Bronze',
-          color: 'Bronze',
-          unit: 'pièce',
+          id: 'ART-020',
+          name: "Tringle en metal inf",
+          description: "Tringle en metal inf - Accessoires rideaux",
+          unitPrice: 7000,
+          domain: "Ameublements",
+          lowerLimitPrice: 7500,
+          upperLimitPrice: 8000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "barre",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-009',
-          name: 'Vis à bois 4x50mm',
-          description: 'Vis à bois 4x50mm, boîte de 100',
-          unitPrice: 2500,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'VIS-4-50-001',
-          material: 'Acier',
-          color: 'Zingué',
-          unit: 'boîte',
+          id: 'ART-021',
+          name: "Tringle en metal super",
+          description: "Tringle en metal super - Accessoires rideaux",
+          unitPrice: 17000,
+          domain: "Ameublements",
+          lowerLimitPrice: 18000,
+          upperLimitPrice: 20000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "barre",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-010',
-          name: 'Chevilles 8mm',
-          description: 'Chevilles 8mm pour fixation murale, boîte de 50',
-          unitPrice: 1800,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'CHEV-8-001',
-          material: 'Plastique',
-          color: 'Blanc',
-          unit: 'boîte',
+          id: 'ART-022',
+          name: "Embout",
+          description: "Embout - Accessoires rideaux",
+          unitPrice: 3000,
+          domain: "Ameublements",
+          lowerLimitPrice: 4000,
+          upperLimitPrice: 5000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-011',
-          name: 'Colle bois blanche',
-          description: 'Colle bois blanche 500ml',
+          id: 'ART-023',
+          name: "Suport simple",
+          description: "Suport simple - Accessoires rideaux",
           unitPrice: 1200,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'COLLE-BOIS-001',
-          material: 'Colle',
-          color: 'Blanc',
-          unit: 'bouteille',
+          domain: "Ameublements",
+          lowerLimitPrice: 2000,
+          upperLimitPrice: 3000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-ACCESS-012',
-          name: 'Agrafes 6mm',
-          description: 'Agrafes 6mm pour agrafeuse, boîte de 1000',
-          unitPrice: 800,
-          categoryId: 'CAT-ACCESSOIRES',
-          sku: 'AGR-6-001',
-          material: 'Acier',
-          color: 'Galvanisé',
-          unit: 'boîte',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Ameublement - Éléments de décoration (complet)
-        {
-          id: 'ART-DECO-001',
-          name: 'Coussins décoratifs 40x40cm',
-          description: 'Coussins décoratifs en coton, 40x40cm',
-          unitPrice: 3500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'COUSS-40-001',
-          material: 'Coton',
-          color: 'Multicolore',
-          unit: 'pièce',
+          id: 'ART-024',
+          name: "Suport double",
+          description: "Suport double - Accessoires rideaux",
+          unitPrice: 2000,
+          domain: "Ameublements",
+          lowerLimitPrice: 3000,
+          upperLimitPrice: 4000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-002',
-          name: 'Nappes coton 150x150cm',
-          description: 'Nappes en coton 150x150cm pour table',
-          unitPrice: 4500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'NAPPE-150-001',
-          material: 'Coton',
-          color: 'Blanc',
-          unit: 'pièce',
+          id: 'ART-025',
+          name: "Rail simple",
+          description: "Rail simple - Accessoires rideaux",
+          unitPrice: 9000,
+          domain: "Ameublements",
+          lowerLimitPrice: 10000,
+          upperLimitPrice: 12000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "u",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-003',
-          name: 'Tapis laine 200x300cm',
-          description: 'Tapis en laine 200x300cm, motif persan',
-          unitPrice: 85000,
-          categoryId: 'CAT-DECORATION',
-          sku: 'TAPIS-200-001',
-          material: 'Laine',
-          color: 'Rouge et or',
-          unit: 'pièce',
+          id: 'ART-026',
+          name: "rail double",
+          description: "rail double - Accessoires rideaux",
+          unitPrice: 13000,
+          domain: "Ameublements",
+          lowerLimitPrice: 15500,
+          upperLimitPrice: 18000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "u",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-004',
-          name: 'Miroir ovale 60cm',
-          description: 'Miroir ovale 60cm avec cadre doré',
-          unitPrice: 25000,
-          categoryId: 'CAT-DECORATION',
-          sku: 'MIRR-OVAL-001',
-          material: 'Verre et métal',
-          color: 'Doré',
-          unit: 'pièce',
+          id: 'ART-027',
+          name: "embrasse",
+          description: "embrasse - Accessoires rideaux",
+          unitPrice: 2000,
+          domain: "Ameublements",
+          lowerLimitPrice: 3000,
+          upperLimitPrice: 4000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-005',
-          name: 'Tableau moderne 50x70cm',
-          description: 'Tableau moderne abstrait 50x70cm',
-          unitPrice: 15000,
-          categoryId: 'CAT-DECORATION',
-          sku: 'TABL-MOD-001',
-          material: 'Toile et peinture',
-          color: 'Multicolore',
-          unit: 'pièce',
+          id: 'ART-028',
+          name: "Anneau-pince aluminium",
+          description: "Anneau-pince aluminium - Accessoires rideaux",
+          unitPrice: 1000,
+          domain: "Ameublements",
+          lowerLimitPrice: 1500,
+          upperLimitPrice: 2000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-006',
-          name: 'Cadres photo 15x20cm',
-          description: 'Cadres photo 15x20cm, lot de 4',
-          unitPrice: 3500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'CADR-15-20-001',
-          material: 'Bois',
-          color: 'Chêne',
-          unit: 'lot',
+          id: 'ART-029',
+          name: "Crochet",
+          description: "Crochet - Accessoires rideaux",
+          unitPrice: 1000,
+          domain: "Ameublements",
+          lowerLimitPrice: 1500,
+          upperLimitPrice: 2000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "Paquet",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-007',
-          name: 'Horloge murale 40cm',
-          description: 'Horloge murale 40cm, style vintage',
-          unitPrice: 8500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'HORL-40-001',
-          material: 'Métal et verre',
-          color: 'Noir',
-          unit: 'pièce',
+          id: 'ART-030',
+          name: "Store",
+          description: "Store - Accessoires rideaux",
+          unitPrice: 30000,
+          domain: "Ameublements",
+          lowerLimitPrice: 35000,
+          upperLimitPrice: 50000,
+          categoryId: 'CAT-ACCESSOIRES-RIDEAUX',
+          unit: "m",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-008',
-          name: 'Vases céramique 25cm',
-          description: 'Vases en céramique 25cm de haut, lot de 3',
-          unitPrice: 12000,
-          categoryId: 'CAT-DECORATION',
-          sku: 'VASE-CER-001',
-          material: 'Céramique',
-          color: 'Blanc',
-          unit: 'lot',
+          id: 'ART-031',
+          name: "Cartouche d'encre (HP 207A) pour imprimante HP Color LaserJet Pro M283fdw ((pack de 4 couleurs)",
+          description: "Cartouche d'encre (HP 207A) pour imprimante HP Color LaserJet Pro M283fdw ((pack de 4 couleurs) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-009',
-          name: 'Paniers osier 30cm',
-          description: 'Paniers en osier 30cm de diamètre',
-          unitPrice: 4500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'PAN-OSIER-001',
-          material: 'Osier',
-          color: 'Naturel',
-          unit: 'pièce',
+          id: 'ART-032',
+          name: "Cartouche d'encre (HP 415A) pour imprimante HP COLOR LASERJET PRO MFP M479DW (pack de 4 couleurs)",
+          description: "Cartouche d'encre (HP 415A) pour imprimante HP COLOR LASERJET PRO MFP M479DW (pack de 4 couleurs) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-010',
-          name: 'Corbeilles tissu 20cm',
-          description: 'Corbeilles en tissu 20cm, lot de 2',
-          unitPrice: 3500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'CORB-TISS-001',
-          material: 'Tissu',
-          color: 'Gris',
-          unit: 'lot',
+          id: 'ART-033',
+          name: "Cartouche d'encre (59 A) pour l'imprimante HP laser Jet Pro MFP M428 fdw",
+          description: "Cartouche d'encre (59 A) pour l'imprimante HP laser Jet Pro MFP M428 fdw - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-011',
-          name: 'Fleurs artificielles roses',
-          description: 'Bouquet de fleurs artificielles roses',
-          unitPrice: 2500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'FLEUR-ART-001',
-          material: 'Plastique',
-          color: 'Rose',
-          unit: 'bouquet',
+          id: 'ART-034',
+          name: "Toner (C-EXV 53) pour le copieur CANON Image RUNNER ADVANCE 4545i",
+          description: "Toner (C-EXV 53) pour le copieur CANON Image RUNNER ADVANCE 4545i - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-012',
-          name: 'Pots terre cuite 15cm',
-          description: 'Pots en terre cuite 15cm de diamètre, lot de 6',
-          unitPrice: 1800,
-          categoryId: 'CAT-DECORATION',
-          sku: 'POT-TERRE-001',
-          material: 'Terre cuite',
-          color: 'Terre',
-          unit: 'lot',
+          id: 'ART-035',
+          name: "Cartouche d'encre (HP 205A) pour l'imprimante HP Color Laser Jet Pro M181 fw (Couleur noir)",
+          description: "Cartouche d'encre (HP 205A) pour l'imprimante HP Color Laser Jet Pro M181 fw (Couleur noir) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-013',
-          name: 'Terrarium verre 25cm',
-          description: 'Terrarium en verre 25cm pour plantes',
-          unitPrice: 8500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'TERR-VERRE-001',
-          material: 'Verre',
-          color: 'Transparent',
-          unit: 'pièce',
+          id: 'ART-036',
+          name: "Cartouche d'encre (26A) pour l'imprimante HP laser Jet Pro M402dn et l'imprimante HP laser Jet Pro MFP 426 fdw",
+          description: "Cartouche d'encre (26A) pour l'imprimante HP laser Jet Pro M402dn et l'imprimante HP laser Jet Pro MFP 426 fdw - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-014',
-          name: 'Tringles rideaux 200cm',
-          description: 'Tringles pour rideaux 200cm, métal chromé',
-          unitPrice: 4500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'TRING-200-001',
-          material: 'Métal',
-          color: 'Chrome',
-          unit: 'pièce',
+          id: 'ART-037',
+          name: "Toner HP 201A  (pack de 4 couleurs)",
+          description: "Toner HP 201A  (pack de 4 couleurs) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-015',
-          name: 'Embouts tringle dorés',
-          description: 'Embouts pour tringles dorés, paire',
-          unitPrice: 1200,
-          categoryId: 'CAT-DECORATION',
-          sku: 'EMB-DOR-001',
-          material: 'Métal',
-          color: 'Doré',
-          unit: 'paire',
+          id: 'ART-038',
+          name: "Cartouche d'encre (HP 05 A)",
+          description: "Cartouche d'encre (HP 05 A) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-DECO-016',
-          name: 'Embrasses rideaux',
-          description: 'Embrasses pour rideaux en tissu, lot de 4',
-          unitPrice: 2500,
-          categoryId: 'CAT-DECORATION',
-          sku: 'EMBR-TISS-001',
-          material: 'Tissu',
-          color: 'Beige',
-          unit: 'lot',
-          dateCreation: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        // Articles Ameublement - Matériels tapissiers (complet)
-        {
-          id: 'ART-TAPIS-001',
-          name: 'Mousse polyuréthane 5cm',
-          description: 'Mousse polyuréthane 5cm d\'épaisseur, 100x200cm',
-          unitPrice: 8500,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'MOUSSE-5-001',
-          material: 'Polyuréthane',
-          color: 'Blanc',
-          unit: 'm²',
+          id: 'ART-039',
+          name: "Cartouche d'encre (HP 203 A) (pack de 4 couleurs)",
+          description: "Cartouche d'encre (HP 203 A) (pack de 4 couleurs) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-002',
-          name: 'Ouate de coton 2cm',
-          description: 'Ouate de coton 2cm d\'épaisseur, 100x200cm',
-          unitPrice: 3500,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'OUATE-2-001',
-          material: 'Coton',
-          color: 'Blanc',
-          unit: 'm²',
+          id: 'ART-040',
+          name: "CANON Toner CEXV 32",
+          description: "CANON Toner CEXV 32 - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-003',
-          name: 'Crin végétal 3cm',
-          description: 'Crin végétal 3cm d\'épaisseur, 100x200cm',
-          unitPrice: 12000,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'CRIN-3-001',
-          material: 'Crin végétal',
-          color: 'Naturel',
-          unit: 'm²',
+          id: 'ART-041',
+          name: "HP 131 A Toner FOR Jet Pro 200 color M251, 200 color MFP M276, 200 M251n, 200 M251nw, 200 MFP M276N, 200 MFP M276NW laser printers (SETS OF 4 COLORS)",
+          description: "HP 131 A Toner FOR Jet Pro 200 color M251, 200 color MFP M276, 200 M251n, 200 M251nw, 200 MFP M276N, 200 MFP M276NW laser printers (SETS OF 4 COLORS) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-004',
-          name: 'Sangles élastiques 5cm',
-          description: 'Sangles élastiques 5cm de large, 10m',
-          unitPrice: 2500,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'SANG-ELAS-001',
-          material: 'Élastique',
-          color: 'Blanc',
-          unit: 'mètre',
+          id: 'ART-042',
+          name: "Authentic Toner 80 A",
+          description: "Authentic Toner 80 A - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-005',
-          name: 'Ressorts hélicoïdaux 15cm',
-          description: 'Ressorts hélicoïdaux 15cm de diamètre, lot de 10',
-          unitPrice: 4500,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'RESS-HEL-001',
-          material: 'Acier',
-          color: 'Galvanisé',
-          unit: 'lot',
+          id: 'ART-043',
+          name: "Authentic Toner 85 A",
+          description: "Authentic Toner 85 A - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-006',
-          name: 'Clous décoratifs dorés',
-          description: 'Clous décoratifs dorés 8mm, boîte de 100',
-          unitPrice: 1800,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'CLOU-DOR-001',
-          material: 'Métal',
-          color: 'Doré',
-          unit: 'boîte',
+          id: 'ART-044',
+          name: "CANON Toner CEXV 40",
+          description: "CANON Toner CEXV 40 - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-007',
-          name: 'Galons décoratifs 2cm',
-          description: 'Galons décoratifs 2cm de large, 10m',
-          unitPrice: 1200,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'GALON-2-001',
-          material: 'Tissu',
-          color: 'Or',
-          unit: 'mètre',
+          id: 'ART-045',
+          name: "Toner 410A (pack de 4 couleurs)",
+          description: "Toner 410A (pack de 4 couleurs) - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-008',
-          name: 'Fils à coudre 100m',
-          description: 'Fils à coudre polyester 100m, assortiment couleurs',
-          unitPrice: 800,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'FIL-COUD-001',
-          material: 'Polyester',
-          color: 'Assortiment',
-          unit: 'bobine',
+          id: 'ART-046',
+          name: "Cartouche d'encre(LT 245H) pour l'imprimante LENOVO LJ2655DN",
+          description: "Cartouche d'encre(LT 245H) pour l'imprimante LENOVO LJ2655DN - Consommables informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-CONSOMMABLES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-009',
-          name: 'Aiguilles tapissier 15cm',
-          description: 'Aiguilles tapissier 15cm, lot de 5',
-          unitPrice: 1200,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'AIG-TAP-001',
-          material: 'Acier',
-          color: 'Argent',
-          unit: 'lot',
+          id: 'ART-047',
+          name: "Antivirus Kspersky 4 postes",
+          description: "Antivirus Kspersky 4 postes - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-010',
-          name: 'Colle contact 500ml',
-          description: 'Colle contact pour tapissier 500ml',
-          unitPrice: 2500,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'COLLE-CONT-001',
-          material: 'Colle',
-          color: 'Transparent',
-          unit: 'bouteille',
+          id: 'ART-048',
+          name: "Multiprises parafoudre",
+          description: "Multiprises parafoudre - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         },
         {
-          id: 'ART-TAPIS-011',
-          name: 'Adhésif double face 2cm',
-          description: 'Adhésif double face 2cm de large, 10m',
-          unitPrice: 800,
-          categoryId: 'CAT-TAPISSIER',
-          sku: 'ADH-DOUBLE-001',
-          material: 'Adhésif',
-          color: 'Transparent',
-          unit: 'rouleau',
+          id: 'ART-049',
+          name: "Clé USB 32Go, 64Go",
+          description: "Clé USB 32Go, 64Go - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-050',
+          name: "Disque dur externe 1To",
+          description: "Disque dur externe 1To - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-051',
+          name: "Clé WIFI TP LINK",
+          description: "Clé WIFI TP LINK - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-052',
+          name: "Multiprises parasurtenseur EATON",
+          description: "Multiprises parasurtenseur EATON - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-053',
+          name: "Onduleur APC Back-Ups 2200VA",
+          description: "Onduleur APC Back-Ups 2200VA - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-054',
+          name: "Onduleur APC EASY UPS SMV 1500VA",
+          description: "Onduleur APC EASY UPS SMV 1500VA - Matériels informatiques",
+          unitPrice: 0,
+          domain: "Informatiques",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-MATERIELS-INFORMATIQUES',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-055',
+          name: "Papiers rames paperline blanc (80g)",
+          description: "Papiers rames paperline blanc (80g) - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-056',
+          name: "Chemise",
+          description: "Chemise - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-057',
+          name: "Sous-chemises",
+          description: "Sous-chemises - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-058',
+          name: "Enveloppes A5 kaki",
+          description: "Enveloppes A5 kaki - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-059',
+          name: "Enveloppes A4 kaki",
+          description: "Enveloppes A4 kaki - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-060',
+          name: "Enveloppes A4 blanches",
+          description: "Enveloppes A4 blanches - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-061',
+          name: "Enveloppes A3 kaki",
+          description: "Enveloppes A3 kaki - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-062',
+          name: "Enveloppes 11/22 blanches",
+          description: "Enveloppes 11/22 blanches - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-063',
+          name: "Enveloppes ordinaires kaki",
+          description: "Enveloppes ordinaires kaki - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-064',
+          name: "Enveloppes ordinaires blanches",
+          description: "Enveloppes ordinaires blanches - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-065',
+          name: "Chemises à rabats cartons",
+          description: "Chemises à rabats cartons - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-066',
+          name: "Chemises à sangles (plastifiées)",
+          description: "Chemises à sangles (plastifiées) - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-067',
+          name: "Stylo Luxor Focus bleu ball pen",
+          description: "Stylo Luxor Focus bleu ball pen - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-068',
+          name: "Stylo Luxor Focus noir ball pen",
+          description: "Stylo Luxor Focus noir ball pen - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-069',
+          name: "Stylo à bille rouge Schneider 505 M",
+          description: "Stylo à bille rouge Schneider 505 M - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-070',
+          name: "Stylo à bille noir Schneider 505 M",
+          description: "Stylo à bille noir Schneider 505 M - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-071',
+          name: "Stylo à bille bleu Trio",
+          description: "Stylo à bille bleu Trio - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-072',
+          name: "Stylo à bille noir Trio",
+          description: "Stylo à bille noir Trio - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-073',
+          name: "Bic feutre bleu Schneider Topball 847",
+          description: "Bic feutre bleu Schneider Topball 847 - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-074',
+          name: "Registre 300 pages",
+          description: "Registre 300 pages - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-075',
+          name: "Cahier de transmission",
+          description: "Cahier de transmission - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-076',
+          name: "Agrafes 24/6",
+          description: "Agrafes 24/6 - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-077',
+          name: "Porte Bic grillagé noir ou blanc",
+          description: "Porte Bic grillagé noir ou blanc - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-078',
+          name: "Correcteur PENN (fluid)",
+          description: "Correcteur PENN (fluid) - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
+          dateCreation: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: 'ART-079',
+          name: "Registre Arrivé/ Départ",
+          description: "Registre Arrivé/ Départ - Fournitures de bureau",
+          unitPrice: 0,
+          domain: "Fournitures de bureau",
+          lowerLimitPrice: 0,
+          upperLimitPrice: 0,
+          categoryId: 'CAT-FOURNITURES-BUREAU',
+          unit: "unité",
+          stock: 0,
+          minStock: 0,
           dateCreation: new Date().toISOString(),
           lastUpdated: new Date().toISOString()
         }
@@ -2315,35 +2415,193 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }));
         
         // Fusionner les fournisseurs existants avec les fournisseurs fréquents
-        const existingSuppliers = (parsed.suppliersList || []).map((s: any) => ({ 
-          ...s, 
-          articles: s.articles || (s.produits ? s.produits.map((p: string, idx: number) => ({ id: `LEG-${idx}`, name: p, unitPrice: 0, taxRate: 18 })) : []) 
-        }));
+        const existingSuppliers = (parsed.suppliersList || []).map((s: any) => {
+          // Migration des anciennes données vers le nouveau format
+          return {
+            ...s,
+            type: (s.type && s.type.trim()) || 'Societe', // Par défaut: Société si vide ou chaîne vide
+            classification: (s.classification && s.classification.trim()) || 'National', // Par défaut: National si vide
+            // Migration des anciens régimes fiscaux
+            regimeFiscal: s.regimeFiscal && ['Réel avec TVA', 'Exonéré de la TVA', 'Sans TVA'].includes(s.regimeFiscal)
+              ? s.regimeFiscal
+              : s.regimeFiscal === 'Réel Normal' ? 'Réel avec TVA'
+              : s.regimeFiscal === 'Réel Simplifié' ? 'Réel avec TVA'
+              : s.regimeFiscal === 'Forfait' ? 'Sans TVA'
+              : s.regimeFiscal || 'Réel avec TVA', // Valeur par défaut si inconnu
+            groupeFour: s.groupeFour || s.produits?.[0] || '', // Utiliser groupeFour ou premier produit
+            articles: s.articles || (s.produits ? s.produits.map((p: string, idx: number) => ({ id: `LEG-${idx}`, name: p, unitPrice: 0, taxRate: 18 })) : [])
+          };
+        });
         
         // Vérifier si les fournisseurs fréquents existent déjà
         const existingSupplierNames = existingSuppliers.map((s: any) => s.raisonSociale);
         const newSuppliers = suppliersWithIds.filter(s => !existingSupplierNames.includes(s.raisonSociale));
         
         // Vérifier si les clients par défaut existent déjà
-        const existingClients = parsed.clients || [];
-        const hasDefaultClients = existingClients.some((c: any) => c.raisonSociale === 'Assemblée Nationale');
+        const existingClients = (parsed.clients || []).map((c: any) => {
+          // Migration des anciennes données vers le nouveau format
+          return {
+            ...c,
+            type: c.type || 'Societe', // Par défaut: Société
+            classification: c.classification || (c.type === 'Particulier' ? 'Particulier' : 'National'), // Migration intelligente
+            // Migration des anciens régimes fiscaux
+            regimeFiscal: c.regimeFiscal && ['Réel avec TVA', 'Exonéré de la TVA', 'Sans TVA'].includes(c.regimeFiscal)
+              ? c.regimeFiscal
+              : c.regimeFiscal === 'Réel Normal' ? 'Réel avec TVA'
+              : c.regimeFiscal === 'Réel Simplifié' ? 'Réel avec TVA'
+              : c.regimeFiscal === 'Forfait' ? 'Sans TVA'
+              : 'Réel avec TVA', // Valeur par défaut si inconnu
+            nif: c.nif || '', // S'assurer que NIF est une chaîne vide si non défini
+            adresse: c.adresse || '', // S'assurer que l'adresse est une chaîne vide si non définie
+            telephone: c.telephone || '', // S'assurer que le téléphone est une chaîne vide si non défini
+            email: c.email || '', // S'assurer que l'email est une chaîne vide si non défini
+            contactPrincipal: c.contactPrincipal || '', // S'assurer que le contact principal est une chaîne vide si non défini
+            secteurActivite: c.secteurActivite || '', // S'assurer que le secteur d'activité est une chaîne vide si non défini
+            nomCommercial: c.nomCommercial || '', // S'assurer que le nom commercial est une chaîne vide si non défini
+            rccm: c.rccm || '', // S'assurer que le rccm est une chaîne vide si non défini
+            ville: c.ville || 'Lomé', // S'assurer que la ville est définie
+            delaiPaiement: c.delaiPaiement || 30,
+            remise: c.remise || 0,
+            limiteCredit: c.limiteCredit || 0,
+            statut: c.statut || 'actif',
+            totalFacture: c.totalFacture || 0,
+            totalEncaissement: c.totalEncaissement || 0,
+            soldeImpaye: c.soldeImpaye || 0,
+            nombreFactures: c.nombreFactures || 0,
+          };
+        });
+        const hasDefaultClients = existingClients.some((c: any) => c.raisonSociale === 'ASSEMBLEE NATIONALE' || c.raisonSociale === 'Assemblée Nationale');
         
         // Vérifier si les catégories par défaut existent déjà
         const existingCategories = parsed.articleCategories || [];
         const hasDefaultCategories = existingCategories.some((cat: any) => cat.id === 'CAT-AMEUBLEMENT');
-        const finalCategories = hasDefaultCategories ? existingCategories : [...defaultCategories, ...existingCategories];
+        
+        // S'assurer que toutes les catégories nécessaires existent (même si des catégories existent)
+        const requiredCategoryIds = new Set([
+          'CAT-AMEUBLEMENT', 'CAT-INFORMATIQUE', 'CAT-FOURNITURES',
+          'CAT-TISSUS-ET-REVÊTEMENTS', 'CAT-ACCESSOIRES-RIDEAUX',
+          'CAT-MATERIELS-INFORMATIQUES', 'CAT-FOURNITURES-BUREAU',
+          'CAT-CONSOMMABLES'
+        ]);
+        const existingCategoryIds = new Set(existingCategories.map((cat: any) => cat.id));
+        const missingCategories = defaultCategories.filter((cat: any) => 
+          requiredCategoryIds.has(cat.id) && !existingCategoryIds.has(cat.id)
+        );
+        
+        // Fusionner les catégories : s'assurer que toutes les catégories nécessaires sont présentes
+        // Créer un Set pour éviter les doublons
+        const allCategoryIds = new Set();
+        const mergedCategories: ArticleCategory[] = [];
+        
+        // D'abord ajouter toutes les catégories existantes
+        existingCategories.forEach((cat: any) => {
+          if (!allCategoryIds.has(cat.id)) {
+            allCategoryIds.add(cat.id);
+            mergedCategories.push(cat);
+          }
+        });
+        
+        // Ensuite ajouter les catégories par défaut qui n'existent pas encore
+        if (!hasDefaultCategories) {
+          defaultCategories.forEach((cat: any) => {
+            if (!allCategoryIds.has(cat.id)) {
+              allCategoryIds.add(cat.id);
+              mergedCategories.push(cat);
+            }
+          });
+        } else {
+          // Si les catégories par défaut existent déjà, ajouter seulement celles qui manquent
+          defaultCategories.forEach((cat: any) => {
+            if (requiredCategoryIds.has(cat.id) && !allCategoryIds.has(cat.id)) {
+              allCategoryIds.add(cat.id);
+              mergedCategories.push(cat);
+            }
+          });
+        }
+        
+        const finalCategories = mergedCategories;
 
         // Vérifier si les articles par défaut existent déjà
-        const existingArticles = parsed.articles || [];
-        const hasDefaultArticles = existingArticles.some((art: any) => art.id === 'ART-TISSUS-001');
-        const finalArticles = hasDefaultArticles ? existingArticles : [...defaultArticles, ...existingArticles];
+        const existingArticles = (parsed.articles || []).map((art: any) => {
+          // Migration : s'assurer que les articles ont tous les champs requis
+          return {
+            ...art,
+            domain: art.domain || 'Non spécifié',
+            unit: art.unit || 'unité',
+            lowerLimitPrice: art.lowerLimitPrice || 0,
+            upperLimitPrice: art.upperLimitPrice || 0,
+            dateCreation: art.dateCreation || new Date().toISOString(),
+            lastUpdated: art.lastUpdated || new Date().toISOString(),
+            // S'assurer que categoryId existe (migration automatique basée sur le domaine)
+            categoryId: art.categoryId || (
+              art.domain === 'Ameublements' 
+                ? 'CAT-AMEUBLEMENT'
+                : art.domain === 'Informatiques'
+                ? 'CAT-INFORMATIQUE'
+                : art.domain === 'Fournitures de bureau'
+                ? 'CAT-FOURNITURES'
+                : ''
+            )
+          };
+        });
+        const hasDefaultArticles = existingArticles.some((art: any) => art.id === 'ART-001' || art.id === 'ART-TISSUS-001');
+        
+        // Fusionner les articles existants avec les articles par défaut si nécessaire
+        // Priorité aux articles par défaut en cas de doublons
+        let articlesToMerge: Article[];
+        if (hasDefaultArticles) {
+          // Si les articles par défaut existent déjà, utiliser seulement les articles existants
+          articlesToMerge = existingArticles;
+        } else {
+          // Sinon, mettre les articles par défaut en premier (priorité)
+          articlesToMerge = [...defaultArticles, ...existingArticles];
+        }
+        
+        // Supprimer les doublons basés sur l'ID et le nom (garde le premier trouvé, donc priorité aux articles par défaut)
+        const uniqueArticlesMap = new Map<string, Article>();
+        const seenNames = new Map<string, string>(); // Map: normalizedName -> articleId
+        
+        articlesToMerge.forEach((article: any) => {
+          const normalizedName = (article.name?.toLowerCase().trim() || '').replace(/\s+/g, ' ');
+          
+          // Vérifier d'abord par ID
+          if (uniqueArticlesMap.has(article.id)) {
+            // Doublon d'ID, ignorer
+            return;
+          }
+          
+          // Vérifier par nom si le nom n'est pas vide
+          if (normalizedName && normalizedName.length > 3) {
+            if (seenNames.has(normalizedName)) {
+              // Doublon de nom, garder le premier (déjà ajouté)
+              return;
+            }
+            seenNames.set(normalizedName, article.id);
+          }
+          
+          // Ajouter l'article (pas de doublon)
+          uniqueArticlesMap.set(article.id, article);
+        });
+        
+        const finalArticles = Array.from(uniqueArticlesMap.values());
 
         setState(prev => ({ 
           ...prev, 
           ...parsed, 
           suppliersList: [...existingSuppliers, ...newSuppliers] as SupplierEntity[],
           supplierInvoices: parsed.supplierInvoices || parsed.suppliers || [],
-          clients: hasDefaultClients ? existingClients : [...defaultClients, ...existingClients],
+          clients: hasDefaultClients 
+            ? existingClients 
+            : [...defaultClients.map((c: any) => ({
+                ...c,
+                type: c.type || 'Societe', // Par défaut: Société
+                classification: c.classification || 'National', // Par défaut: National
+                regimeFiscal: c.regimeFiscal === 'Réel Normal' || c.regimeFiscal === 'Réel Simplifié' 
+                  ? 'Réel avec TVA' 
+                  : c.regimeFiscal === 'Forfait' 
+                  ? 'Sans TVA' 
+                  : c.regimeFiscal || 'Réel avec TVA', // Migration des anciens régimes
+              })), ...existingClients],
           discharges: parsed.discharges || [],
           contractOrders: parsed.contractOrders || [],
           bankAccounts: parsed.bankAccounts || [
@@ -2380,6 +2638,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // Ajouter les fournisseurs fréquents avec des IDs uniques
         const suppliersWithIds = frequentSuppliers.map((supplier, index) => ({
+          type: (supplier.type && supplier.type.trim()) || 'Societe', // Par défaut: Société si vide ou chaîne vide
+          classification: (supplier.classification && supplier.classification.trim()) || 'National', // Par défaut: National si vide
+          regimeFiscal: (supplier.regimeFiscal && supplier.regimeFiscal.trim()) || 'Réel avec TVA', // Par défaut: Réel avec TVA
+          groupeFour: supplier.groupeFour || '', // Groupe fournisseur
           ...supplier,
           id: `SUP-${String(index + 1).padStart(3, '0')}`,
           articles: []
@@ -2430,6 +2692,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clients: state.clients,
     discharges: state.discharges,
     contractOrders: state.contractOrders,
+    bankAccounts: state.bankAccounts,
     articlesDirectory: state.articlesDirectory,
     articleCategories: state.articleCategories,
     articleLots: state.articleLots,
@@ -2478,7 +2741,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     addSupplier: (s) => {
       const id = `SUP-${Date.now()}`;
-      const entity: SupplierEntity = { id, produits: [], articles: s.articles || [], ...s } as SupplierEntity;
+      // Gérer la compatibilité avec les anciennes données (migration automatique)
+      const entity: SupplierEntity = {
+        type: s.type || 'Societe', // Par défaut: Société
+        classification: s.classification || 'National', // Par défaut: National
+        regimeFiscal: s.regimeFiscal || 'Réel avec TVA', // Migration vers les nouvelles valeurs
+        groupeFour: s.groupeFour || s.produits?.[0] || '', // Utiliser groupeFour ou premier produit
+        ...s,
+        id,
+        produits: s.produits || [],
+        articles: s.articles || []
+      };
       setState(st => ({ ...st, suppliersList: [entity, ...st.suppliersList] }));
       return entity;
     },
@@ -2759,7 +3032,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Gestion des clients
     addClient: (clientInput) => {
       const id = `CLI-${Date.now()}`;
+      // Gérer la compatibilité avec les anciennes données (migration automatique)
       const client: Client = {
+        type: clientInput.type || 'Societe', // Par défaut: Société
+        classification: clientInput.classification || 'National', // Par défaut: National
+        regimeFiscal: clientInput.regimeFiscal || 'Réel avec TVA', // Migration vers les nouvelles valeurs
         ...clientInput,
         id,
         dateCreation: new Date().toISOString().slice(0, 10),
@@ -2871,7 +3148,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }))
       }));
     }
-  }), [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);
+  }), [state.documents, state.suppliersList, state.supplierInvoices, state.clients, state.discharges, state.contractOrders, state.bankAccounts, state.articlesDirectory, state.articleCategories, state.articleLots, state.articles]);
 
   return <DataContext.Provider value={api}>{children}</DataContext.Provider>;
 };

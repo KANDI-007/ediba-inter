@@ -1,10 +1,34 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Star, StarOff, Building2, CreditCard, MapPin, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { BankAccount } from '../../contexts/DataContext';
 
 const BankModule: React.FC = () => {
-  const { bankAccounts, addBankAccount, updateBankAccount, deleteBankAccount, setDefaultBankAccount } = useData();
+  // Gestion sécurisée du contexte
+  let dataContext;
+  try {
+    dataContext = useData();
+  } catch (error) {
+    console.error('Erreur lors de l\'accès au contexte Data:', error);
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-red-800 mb-2">Erreur de chargement</h2>
+          <p className="text-red-600">
+            Le module bancaire n'a pas pu être chargé. Veuillez rafraîchir la page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { 
+    bankAccounts = [], 
+    addBankAccount, 
+    updateBankAccount, 
+    deleteBankAccount, 
+    setDefaultBankAccount 
+  } = dataContext;
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -13,7 +37,18 @@ const BankModule: React.FC = () => {
   
   // Vérification de sécurité - permettre le fonctionnement même sans données
   // Utiliser useMemo pour que safeBankAccounts se mette à jour quand bankAccounts change
-  const safeBankAccounts = React.useMemo(() => bankAccounts || [], [bankAccounts]);
+  const safeBankAccounts = React.useMemo(() => {
+    const accounts = bankAccounts || [];
+    // S'assurer que la liste est toujours à jour
+    console.log('🔄 Mise à jour de safeBankAccounts:', accounts.length, 'comptes');
+    return accounts;
+  }, [bankAccounts]);
+
+  // Debug: Log quand bankAccounts change
+  useEffect(() => {
+    console.log('📊 bankAccounts mis à jour:', bankAccounts.length, 'comptes');
+    console.log('📋 Liste complète:', bankAccounts);
+  }, [bankAccounts]);
   
   const [formData, setFormData] = useState<Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>>({
     bankName: '',
@@ -39,35 +74,73 @@ const BankModule: React.FC = () => {
     ), [safeBankAccounts, searchTerm]);
 
   const handleAdd = () => {
-    // Validation des champs obligatoires
-    if (!formData.bankName.trim() || !formData.accountNumber.trim() || !formData.accountHolder.trim()) {
-      alert('Veuillez remplir tous les champs obligatoires (Nom de la banque, Numéro de compte, Titulaire)');
-      return;
-    }
-    
-    addBankAccount(formData);
-    setShowAddModal(false);
-    resetForm();
-  };
-
-  const handleEdit = () => {
-    if (selectedBank) {
+    try {
       // Validation des champs obligatoires
       if (!formData.bankName.trim() || !formData.accountNumber.trim() || !formData.accountHolder.trim()) {
         alert('Veuillez remplir tous les champs obligatoires (Nom de la banque, Numéro de compte, Titulaire)');
         return;
       }
       
-      updateBankAccount(selectedBank.id, formData);
-      setShowEditModal(false);
-      setSelectedBank(null);
+      // Ajouter le compte bancaire
+      const savedAccount = addBankAccount(formData);
+      
+      if (!savedAccount || !savedAccount.id) {
+        throw new Error('La sauvegarde a échoué - aucun compte retourné');
+      }
+      
+      console.log('✅ Compte bancaire sauvegardé:', savedAccount);
+      console.log('📋 Liste actuelle des comptes:', bankAccounts);
+      
+      // Réinitialiser le formulaire AVANT de fermer le modal
       resetForm();
+      
+      // Fermer le modal
+      setShowAddModal(false);
+      
+      // Forcer un re-render en vérifiant que la liste se met à jour
+      // Le state devrait se mettre à jour automatiquement via React
+      setTimeout(() => {
+        console.log('📋 Liste des comptes après ajout:', bankAccounts);
+        alert('✅ Compte bancaire ajouté avec succès !');
+        // Forcer une mise à jour en réaffectant le state
+        window.dispatchEvent(new Event('storage'));
+      }, 200);
+    } catch (error: any) {
+      console.error('Erreur lors de l\'ajout du compte bancaire:', error);
+      alert(`❌ Erreur lors de l'ajout: ${error?.message || error}`);
+    }
+  };
+
+  const handleEdit = () => {
+    if (selectedBank) {
+      try {
+        // Validation des champs obligatoires
+        if (!formData.bankName.trim() || !formData.accountNumber.trim() || !formData.accountHolder.trim()) {
+          alert('Veuillez remplir tous les champs obligatoires (Nom de la banque, Numéro de compte, Titulaire)');
+          return;
+        }
+        
+        updateBankAccount(selectedBank.id, formData);
+        setShowEditModal(false);
+        setSelectedBank(null);
+        resetForm();
+        alert('✅ Compte bancaire modifié avec succès !');
+      } catch (error: any) {
+        console.error('Erreur lors de la modification du compte bancaire:', error);
+        alert(`❌ Erreur lors de la modification: ${error?.message || error}`);
+      }
     }
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce compte bancaire ?')) {
-      deleteBankAccount(id);
+      try {
+        deleteBankAccount(id);
+        alert('✅ Compte bancaire supprimé avec succès !');
+      } catch (error: any) {
+        console.error('Erreur lors de la suppression du compte bancaire:', error);
+        alert(`❌ Erreur lors de la suppression: ${error?.message || error}`);
+      }
     }
   };
 
@@ -88,7 +161,7 @@ const BankModule: React.FC = () => {
       address: '',
       phone: '',
       email: '',
-      isDefault: safeBankAccounts.length === 0, // Premier compte par défaut
+      isDefault: false, // Sera défini automatiquement si c'est le premier compte
       isActive: true
     });
   };

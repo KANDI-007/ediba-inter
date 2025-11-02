@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import SplashScreen from './components/SplashScreen';
+import LogoIcon from './components/LogoIcon';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import DashboardModern from './components/DashboardModern';
@@ -136,27 +137,32 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        fontFamily: 'Arial, sans-serif'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            width: '50px', 
-            height: '50px', 
-            border: '3px solid rgba(255,255,255,0.3)',
-            borderTop: '3px solid white',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }}></div>
-          <h2>🔄 Chargement...</h2>
-          <p>Initialisation de l'application</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 flex items-center justify-center relative overflow-hidden">
+        {/* Effets de fond animés */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+
+        <div className="text-center relative z-10">
+          {/* Logo avec animation moderne */}
+          <div className="relative mb-8 inline-block">
+            <div className="relative bg-white p-6 rounded-3xl shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl"></div>
+              <div className="relative flex items-center justify-center">
+                <LogoIcon size={100} variant="default" className="mx-auto" />
+              </div>
+            </div>
+          </div>
+
+          {/* Loader moderne avec icône SVG */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="relative w-20 h-20 mb-4">
+              <img src="./loading-spinner.svg" alt="Chargement" className="w-full h-full" />
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">Chargement...</h2>
+            <p className="text-white/80">Initialisation de l'application</p>
+          </div>
         </div>
       </div>
     );
@@ -203,8 +209,13 @@ function AppContent() {
             element={isAuthenticated ? <Layout><FiscalYearModule /></Layout> : <Navigate to="/login" />} 
           />
           <Route 
-            path="/backup" 
+            path="/backups" 
             element={isAuthenticated ? <Layout><BackupModule /></Layout> : <Navigate to="/login" />} 
+          />
+          {/* Redirection pour compatibilité avec l'ancienne route */}
+          <Route 
+            path="/backup" 
+            element={<Navigate to="/backups" replace />} 
           />
           <Route 
             path="/activity-log" 

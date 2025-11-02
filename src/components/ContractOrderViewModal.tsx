@@ -273,43 +273,23 @@ const ContractOrderViewModal: React.FC<ContractOrderViewModalProps> = ({
             {/* Informations budgétaires */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Informations budgétaires</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Imputation budgétaire
-                  </label>
-                  <input
-                    type="text"
-                    value={formData?.budgetAllocation || ''}
-                    onChange={(e) => handleInputChange('budgetAllocation', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Compte de dépôt
-                  </label>
-                  <input
-                    type="text"
-                    value={formData?.depositAccount || ''}
-                    onChange={(e) => handleInputChange('depositAccount', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Intitulé du compte de dépôt
-                  </label>
-                  <input
-                    type="text"
-                    value={formData?.depositAccountTitle || ''}
-                    onChange={(e) => handleInputChange('depositAccountTitle', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Informations budgétaires complètes
+                </label>
+                <textarea
+                  value={formData?.budgetInformation || ''}
+                  onChange={(e) => handleInputChange('budgetInformation', e.target.value)}
+                  disabled={!isEditing}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
+                  rows={4}
+                  placeholder="Exemple:&#10;Budget de l'État, Gestion 2024&#10;Compte de dépôt: 1173&#10;Intitulé: FACT-REGIONS"
+                />
+                {!isEditing && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Vous pouvez modifier ce champ en mode édition
+                  </p>
+                )}
               </div>
             </div>
 

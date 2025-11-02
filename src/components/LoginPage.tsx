@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import LogoIcon from './LogoIcon';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -23,7 +24,9 @@ const LoginPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-2xl p-8 transform transition-all duration-500 hover:scale-105 border border-brand-blue/10">
           {/* Logo */}
           <div className="text-center mb-8">
-            <img src="./logo-ediba.png" alt="EDIBA-INTER" className="mx-auto mb-4 h-16 object-contain" />
+            <div className="flex justify-center mb-4">
+              <LogoIcon size={64} variant="default" className="mx-auto" />
+            </div>
             <h1 className="text-2xl font-bold text-gray-800">EDIBA-INTER</h1>
             <p className="text-gray-600 text-sm">Application de Facturation</p>
           </div>

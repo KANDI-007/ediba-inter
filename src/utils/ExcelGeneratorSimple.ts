@@ -2,15 +2,17 @@
 export interface InvoiceData {
   numero: string;
   nom: string;
+  nif: string;
   objet: string;
   montantHT: number;
   tva: number;
   montantTTC: number;
-  etatPaiement: string;
   etatExecution: string;
+  etatPaiement: string;
   etatArchive: string;
   etatOtr: string;
   date: string;
+  periodeDeclaration: string;
 }
 
 export interface SupplierInvoiceData {
@@ -102,14 +104,14 @@ export const exportClientInvoiceJournal = async (data: InvoiceData[], filename: 
     const workbook = XLSX.utils.book_new();
     
     // Créer les données pour le tableau
-    const headers = ['NUMERO', 'NOM', 'OBJET', 'MONTANT HT', 'TVA', 'MONTANT TTC', 'ETAT DE PAYEMENT', 'ETAT EXCECUTION', 'ETAT ARCHIVE', 'ETAT OTR', 'DATE'];
+    const headers = ['NUMERO', 'NOM', 'NIF', 'OBJET', 'MONTANT HT', 'TVA', 'MONTANT TTC', 'ETAT EXECUTION', 'ETAT DE PAYEMENT', 'ETAT ARCHIVE', 'ETAT OTR', 'DATE', 'PERIODE DECLARATION'];
     
     // Préparer les données
     const worksheetData = [
       // Ligne vide
       [],
       // Titre principal
-      ['', '', '', '', 'JOURNAL DES FACTURES CLIENTS', '', '', '', '', '', ''],
+      ['', '', '', '', '', 'JOURNAL DES FACTURES CLIENTS', '', '', '', '', '', '', ''],
       // Lignes vides
       [],
       [],
@@ -119,15 +121,17 @@ export const exportClientInvoiceJournal = async (data: InvoiceData[], filename: 
       ...data.map(invoice => [
         invoice.numero,
         invoice.nom,
+        invoice.nif || '',
         invoice.objet,
         invoice.montantHT,
         invoice.tva,
         invoice.montantTTC,
-        invoice.etatPaiement,
         invoice.etatExecution,
+        invoice.etatPaiement,
         invoice.etatArchive,
         invoice.etatOtr,
-        invoice.date
+        invoice.date,
+        invoice.periodeDeclaration || ''
       ])
     ];
 
@@ -157,7 +161,7 @@ export const exportClientInvoiceJournal = async (data: InvoiceData[], filename: 
         if (!worksheet[cellRef]) worksheet[cellRef] = { v: '' };
         
         // Style spécial pour la colonne ETAT DE PAYEMENT (vert clair)
-        if (col === 6) { // ETAT DE PAYEMENT
+        if (col === 8) { // ETAT DE PAYEMENT (nouvelle position après ETAT EXECUTION)
           worksheet[cellRef].s = createCellStyle(COLORS.paymentBg, COLORS.paymentText);
         } else {
           worksheet[cellRef].s = createCellStyle(COLORS.dataBg, COLORS.dataText);

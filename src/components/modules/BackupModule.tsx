@@ -18,8 +18,27 @@ import { useBackup, BackupData } from '../../contexts/BackupContext';
 import { useAuth } from '../../contexts/AuthContext';
 
 const BackupModule: React.FC = () => {
+  // Gestion sécurisée du contexte
+  let backupContext;
+  try {
+    backupContext = useBackup();
+  } catch (error) {
+    console.error('Erreur lors de l\'accès au contexte Backup:', error);
+    // Retourner un composant d'erreur au lieu de planter
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-red-800 mb-2">Erreur de chargement</h2>
+          <p className="text-red-600">
+            Le module de sauvegarde n'a pas pu être chargé. Veuillez rafraîchir la page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const { 
-    backups, 
+    backups = [], 
     createBackup, 
     restoreBackup, 
     deleteBackup, 
@@ -29,9 +48,18 @@ const BackupModule: React.FC = () => {
     scheduleAutoBackup,
     cancelAutoBackup,
     getStorageUsage
-  } = useBackup();
+  } = backupContext;
   
-  const { hasPermission } = useAuth();
+  // Gestion sécurisée du contexte Auth
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (error) {
+    console.error('Erreur lors de l\'accès au contexte Auth:', error);
+    authContext = { hasPermission: () => true }; // Fallback par défaut
+  }
+
+  const { hasPermission = () => true } = authContext || {};
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState<string | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);

@@ -6,6 +6,7 @@ import AdvancedPrintModal from '../AdvancedPrintModal';
 import { useActivityLogger } from '../../contexts/ActivityContext';
 import { useData } from '../../contexts/DataContext';
 import '../../styles/decharge.css';
+import LogoIcon from '../LogoIcon';
 
 const DischargeModule: React.FC = () => {
   const { logCreate, logUpdate, logView, logDelete, logExport } = useActivityLogger();
@@ -611,19 +612,15 @@ const DischargeModule: React.FC = () => {
                 marginBottom: '10px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <img 
-                    src="./factureimage/header.jpg" 
-                    alt="Logo EDIBA INTER" 
-                    style={{ 
-                      height: '60px', 
-                      marginRight: '15px',
-                      objectFit: 'contain'
-                    }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
+                  <div style={{ 
+                    height: '60px', 
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <LogoIcon size={60} variant="default" />
+                  </div>
                   <div>
                     <div style={{ 
                       fontSize: '18px', 

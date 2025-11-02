@@ -110,11 +110,22 @@ const DashboardModern: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Chargement du tableau de bord...</h2>
-          <p className="text-gray-500 mt-2">Préparation de vos données</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 flex items-center justify-center relative overflow-hidden">
+        {/* Effets de fond animés */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+
+        <div className="text-center relative z-10">
+          {/* Loader moderne avec icône SVG */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="relative w-20 h-20 mb-4">
+              <img src="./loading-spinner.svg" alt="Chargement" className="w-full h-full" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">Chargement du tableau de bord...</h2>
+            <p className="text-gray-500">Préparation de vos données</p>
+          </div>
         </div>
       </div>
     );

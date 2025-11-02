@@ -51,7 +51,8 @@ const InvoiceModule: React.FC = () => {
     articleCategories,
     contractOrders,
     addContractOrder,
-    updateContractOrder
+    updateContractOrder,
+    bankAccounts
   } = useData();
   const { updateDocument, deleteDocument } = useData() as any;
   const { logCreate, logUpdate, logView, logExport } = useActivityLogger();
@@ -87,7 +88,6 @@ const InvoiceModule: React.FC = () => {
   const [selectedContractOrder, setSelectedContractOrder] = useState<ContractOrderData | null>(null);
   const [showContractOrderView, setShowContractOrderView] = useState(false);
   const [selectedContractOrderForView, setSelectedContractOrderForView] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Fonctions de gestion du nouveau processus
   const handleContractOrderSelection = (type: 'contract' | 'order') => {
@@ -97,14 +97,39 @@ const InvoiceModule: React.FC = () => {
   };
 
   const handleContractOrderSave = (data: ContractOrderData) => {
-    const savedContractOrder = addContractOrder(data);
-    setSelectedContractOrder(savedContractOrder);
-    setShowContractOrderForm(false);
-    // Maintenant on peut créer le document avec la référence
-    setForm(prev => ({
-      ...prev,
-      contractOrderReference: `${data.documentType === 'contract' ? 'CONTRAT' : 'LETTRE DE COMMANDE'} N°${data.documentNumber}`
-    }));
+    try {
+      const savedContractOrder = addContractOrder(data);
+      setSelectedContractOrder(savedContractOrder);
+      setShowContractOrderForm(false);
+      
+      // Afficher un message de confirmation
+      const documentTypeText = data.documentType === 'contract' ? 'Contrat' : 'Lettre de Commande';
+      alert(`${documentTypeText} sauvegardé avec succès !\nNuméro: ${savedContractOrder.documentNumber}\nID: ${savedContractOrder.id}`);
+      
+      // Réinitialiser le formulaire
+      setForm({
+        date: new Date().toISOString().slice(0,10),
+        client: '',
+        institution: '',
+        address: '',
+        city: 'Lomé',
+        clientPhone: '',
+        tva: 18,
+        items: [{ description: '', quantity: 1, unitPrice: 0 }],
+        paymentTermsDays: 0,
+        paymentMethod: 'Non spécifié',
+        latePaymentInterest: 'Taux d\'intérêts légal en vigueur',
+        contractOrderReference: `${data.documentType === 'contract' ? 'CONTRAT' : 'LETTRE DE COMMANDE'} N°${data.documentNumber}`,
+        selectedBankAccountId: undefined,
+      } as any);
+      
+      // Si nécessaire, créer automatiquement un document associé
+      // Pour l'instant, on garde juste la référence pour une utilisation future
+      logCreate('Facturation', `${documentTypeText} ${savedContractOrder.documentNumber}`, savedContractOrder.id);
+    } catch (error: any) {
+      console.error('Erreur lors de la sauvegarde du contrat/lettre de commande:', error);
+      alert(`Erreur lors de la sauvegarde: ${error?.message || error}`);
+    }
   };
 
   const [form, setForm] = useState({
@@ -697,29 +722,6 @@ const InvoiceModule: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
-              {/* Boutons de vue */}
-              <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                <button 
-                  onClick={() => setViewMode('cards')}
-                  className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                    viewMode === 'cards' 
-                      ? 'bg-sky-600 text-white' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Cartes
-                </button>
-                <button 
-                  onClick={() => setViewMode('table')}
-                  className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                    viewMode === 'table' 
-                      ? 'bg-sky-600 text-white' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Tableau
-                </button>
-              </div>
               <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                 <Filter className="w-4 h-4 mr-2" />
                 Filtres
@@ -732,112 +734,7 @@ const InvoiceModule: React.FC = () => {
           </div>
         </div>
 
-        {/* Vue Tableau */}
-        {viewMode === 'table' && (
-          <div className="overflow-x-auto mt-4">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Numéro
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    NIF
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Montant HT
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Montant TTC
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    État exécution
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    État de paiement
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {invoice.documentNumber || invoice.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {invoice.client}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {(() => {
-                        const clientData = clients.find(c => c.raisonSociale === invoice.client);
-                        return clientData?.nif || 'N/A';
-                      })()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(invoice.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {invoice.amountHT?.toFixed(2) || '0.00'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {invoice.amountTTC?.toFixed(2) || '0.00'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                        {getStatusText(invoice.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        {invoice.paymentStatus || 'Non payé'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setSelectedDocument(invoice);
-                            setShowViewModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedDocument(invoice);
-                            setShowEditModal(true);
-                          }}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteInvoice(invoice.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Vue Cartes */}
-        {viewMode === 'cards' && (
+        {/* Liste des documents */}
         <div className="divide-y divide-gray-200">
           {filteredInvoices.map((invoice) => (
             <div key={invoice.id} className="p-6 hover:bg-gray-50 transition-colors duration-200">
@@ -960,8 +857,9 @@ const InvoiceModule: React.FC = () => {
                               paymentTermsDays: doc.paymentTermsDays || 30,
                               paymentMethod: doc.paymentMethod || 'Non spécifié',
                               latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur',
-                              contractOrderReference: doc.contractOrderReference
-                            });
+                              contractOrderReference: doc.contractOrderReference,
+                              selectedBankAccountId: undefined // À détecter automatiquement si nécessaire
+                            } as any);
                             setNewDocType(doc.type);
                             setShowNewModal(true);
                           }
@@ -1045,8 +943,9 @@ const InvoiceModule: React.FC = () => {
                             items: doc.items,
                             paymentTermsDays: doc.paymentTermsDays || 30,
                             paymentMethod: doc.paymentMethod || 'Non spécifié',
-                            latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur'
-                          });
+                            latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur',
+                            selectedBankAccountId: undefined
+                          } as any);
                           setNewDocType(doc.type);
                           setShowNewModal(true);
                         }
@@ -1134,8 +1033,9 @@ const InvoiceModule: React.FC = () => {
                                   items: doc.items,
                                   paymentTermsDays: doc.paymentTermsDays || 30,
                                   paymentMethod: doc.paymentMethod || 'Non spécifié',
-                                  latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur'
-                                });
+                                  latePaymentInterest: doc.latePaymentInterest || 'Taux d\'intérêts légal en vigueur',
+                                  selectedBankAccountId: undefined
+                                } as any);
                                 setNewDocType(doc.type);
                                 setShowNewModal(true);
                               }
@@ -1214,7 +1114,6 @@ const InvoiceModule: React.FC = () => {
             </div>
           ))}
         </div>
-        )}
 
         {filteredInvoices.length === 0 && (
           <div className="p-12 text-center">
@@ -1370,6 +1269,68 @@ const InvoiceModule: React.FC = () => {
                 </div>
               </div>
 
+              {/* Sélection de la banque */}
+              <div className="mt-4">
+                <label className="text-sm text-gray-600 font-semibold">Compte bancaire (Optionnel)</label>
+                <select 
+                  className="mt-1 w-full border rounded-lg px-3 py-2 bg-white" 
+                  value={(form as any).selectedBankAccountId || ''} 
+                  onChange={(e) => {
+                    const bankId = e.target.value;
+                    if (bankId) {
+                      const selectedBank = (bankAccounts || []).find((b: any) => b.id === bankId);
+                      if (selectedBank) {
+                        // Construire le texte du mode de paiement avec les informations bancaires
+                        const bankInfo = [
+                          `Banque: ${selectedBank.bankName}`,
+                          `Compte: ${selectedBank.accountNumber}`,
+                          `Titulaire: ${selectedBank.accountHolder}`,
+                          selectedBank.swiftCode ? `SWIFT: ${selectedBank.swiftCode}` : '',
+                          selectedBank.iban ? `IBAN: ${selectedBank.iban}` : ''
+                        ].filter(Boolean).join(' | ');
+                        
+                        setForm({ 
+                          ...form, 
+                          paymentMethod: bankInfo,
+                          selectedBankAccountId: bankId
+                        } as any);
+                      }
+                    } else {
+                      setForm({ 
+                        ...form, 
+                        paymentMethod: 'Non spécifié',
+                        selectedBankAccountId: undefined
+                      } as any);
+                    }
+                  }}
+                >
+                  <option value="">Sélectionner un compte bancaire...</option>
+                  {(bankAccounts || []).filter((b: any) => b.isActive).map((bank: any) => (
+                    <option key={bank.id} value={bank.id}>
+                      {bank.bankName} - {bank.accountNumber} {bank.isDefault && '(Par défaut)'}
+                    </option>
+                  ))}
+                </select>
+                {((form as any).selectedBankAccountId) && (
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    {(() => {
+                      const selectedBank = (bankAccounts || []).find((b: any) => b.id === (form as any).selectedBankAccountId);
+                      if (!selectedBank) return null;
+                      return (
+                        <div className="text-xs text-gray-700 space-y-1">
+                          <p><span className="font-semibold">Banque:</span> {selectedBank.bankName}</p>
+                          <p><span className="font-semibold">Compte:</span> {selectedBank.accountNumber}</p>
+                          <p><span className="font-semibold">Titulaire:</span> {selectedBank.accountHolder}</p>
+                          {selectedBank.swiftCode && <p><span className="font-semibold">SWIFT:</span> {selectedBank.swiftCode}</p>}
+                          {selectedBank.iban && <p><span className="font-semibold">IBAN:</span> {selectedBank.iban}</p>}
+                          {selectedBank.branchCode && <p><span className="font-semibold">Agence:</span> {selectedBank.branchCode}</p>}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+
               {/* Nouvelle ligne pour Mode de paiement et Intérêts de retard */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
@@ -1387,6 +1348,11 @@ const InvoiceModule: React.FC = () => {
                     <option value="Lettre de change sans acceptation">Lettre de change sans acceptation</option>
                     <option value="Billet à ordre">Billet à ordre</option>
                   </select>
+                  {(form.paymentMethod && form.paymentMethod.includes('Banque:') && form.paymentMethod.includes('Compte:')) && (
+                    <div className="mt-1 text-xs text-gray-500 italic">
+                      Informations bancaires sélectionnées ci-dessus
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">Intérêts de retard</label>
@@ -1529,33 +1495,66 @@ const InvoiceModule: React.FC = () => {
             <div className="px-6 py-4 flex justify-between gap-2 items-center bg-gray-50">
               <button
                 onClick={() => {
-                  const totalHT = form.items.reduce((s, it) => s + it.quantity * it.unitPrice, 0);
-                  if (!form.institution || totalHT <= 0) { alert('Renseignez l\'institution et au moins une ligne valide.'); return; }
-                  const d = new Date(form.date); d.setDate(d.getDate() + (form.paymentTermsDays || 0));
-                  const dueDate = d.toISOString().slice(0,10);
-                  const saved = saveDocument({
-                    type: newDocType,
-                    date: form.date,
-                    dueDate,
-                    client: form.institution,
-                    address: form.address,
-                    city: form.city,
-                    tva: form.tva,
-                    items: form.items,
-                    status: 'pending',
-                    workflowStatus: newDocType === 'delivery' ? 'delivered' : 
-                                   newDocType === 'proforma' ? 'draft' : 
-                                   newDocType === 'invoice' ? 'completed' : 'draft',
-                    sourceId: newDocType === 'delivery' ? (sourceForBL || undefined) : undefined,
-                    paymentTermsDays: form.paymentTermsDays,
-                    paymentMethod: form.paymentMethod,
-                    latePaymentInterest: form.latePaymentInterest,
-                    contractOrderReference: form.contractOrderReference,
-                  });
-                  logCreate('Facturation', `${getTypeText(newDocType)} ${saved.id}`, saved.id);
-                  setShowNewModal(false);
-                  setSourceForBL(null);
-                  alert(`Document enregistré: ${saved.id}`);
+                  try {
+                    const totalHT = form.items.reduce((s, it) => s + it.quantity * it.unitPrice, 0);
+                    if (!form.institution || totalHT <= 0) { 
+                      alert('Renseignez l\'institution et au moins une ligne valide.'); 
+                      return; 
+                    }
+                    const d = new Date(form.date); 
+                    d.setDate(d.getDate() + (form.paymentTermsDays || 0));
+                    const dueDate = d.toISOString().slice(0,10);
+                    
+                    const saved = saveDocument({
+                      type: newDocType,
+                      date: form.date,
+                      dueDate,
+                      client: form.institution,
+                      address: form.address,
+                      city: form.city,
+                      tva: form.tva,
+                      items: form.items,
+                      status: 'pending',
+                      workflowStatus: newDocType === 'delivery' ? 'delivered' : 
+                                     newDocType === 'proforma' ? 'draft' : 
+                                     newDocType === 'invoice' ? 'completed' : 'draft',
+                      sourceId: newDocType === 'delivery' ? (sourceForBL || undefined) : undefined,
+                      paymentTermsDays: form.paymentTermsDays,
+                      paymentMethod: form.paymentMethod,
+                      latePaymentInterest: form.latePaymentInterest,
+                      contractOrderReference: form.contractOrderReference,
+                    });
+                    
+                    if (!saved || !saved.id) {
+                      throw new Error('La sauvegarde a échoué - aucun ID retourné');
+                    }
+                    
+                    logCreate('Facturation', `${getTypeText(newDocType)} ${saved.id}`, saved.id);
+                    
+                    // Réinitialiser le formulaire
+                    setForm({
+                      date: new Date().toISOString().slice(0,10),
+                      client: '',
+                      institution: '',
+                      address: '',
+                      city: 'Lomé',
+                      clientPhone: '',
+                      tva: 18,
+                      items: [{ description: '', quantity: 1, unitPrice: 0 }],
+                      paymentTermsDays: 0,
+                      paymentMethod: 'Non spécifié',
+                      latePaymentInterest: 'Taux d\'intérêts légal en vigueur',
+                      selectedBankAccountId: undefined,
+                    } as any);
+                    
+                    setShowNewModal(false);
+                    setSourceForBL(null);
+                    
+                    alert(`✅ Document enregistré avec succès !\n\nType: ${getTypeText(newDocType)}\nID: ${saved.id}\nClient: ${form.institution}`);
+                  } catch (error: any) {
+                    console.error('Erreur lors de la sauvegarde du document:', error);
+                    alert(`❌ Erreur lors de la sauvegarde: ${error?.message || error || 'Erreur inconnue'}`);
+                  }
                 }}
                 className="px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700"
               >
@@ -1779,9 +1778,22 @@ const InvoiceModule: React.FC = () => {
         onClose={() => setShowDocumentTypeSelector(false)}
         onSelect={(type) => {
           setShowDocumentTypeSelector(false);
-          setNewDocType(type as any);
-          setSourceForBL(null);
-          setShowNewModal(true);
+          // Si c'est une lettre de commande, ouvrir directement le formulaire
+          if (type === 'order') {
+            setSelectedContractOrderType('order');
+            setShowContractOrderForm(true);
+          }
+          // Si c'est un contrat, ouvrir directement le formulaire
+          else if (type === 'contract') {
+            setSelectedContractOrderType('contract');
+            setShowContractOrderForm(true);
+          }
+          // Pour les autres types (proforma, invoice, delivery), ouvrir le formulaire normal
+          else {
+            setNewDocType(type as any);
+            setSourceForBL(null);
+            setShowNewModal(true);
+          }
         }}
       />
     </div>

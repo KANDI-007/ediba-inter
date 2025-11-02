@@ -22,11 +22,27 @@ const InvoiceDesignSelector: React.FC<InvoiceDesignSelectorProps> = ({
       featured: true
     },
     {
-      id: 'kilimandjaro',
-      name: 'Design Kilimandjaro (Nouveau)',
-      description: 'Design inspiré de la facture Kilimandjaro avec structure professionnelle et mise en page moderne',
-      preview: 'kilimandjaro-preview',
-      colors: ['#1f2937', '#374151', '#6b7280'],
+      id: 'flex',
+      name: 'Design FLEX (Amélioré)',
+      description: 'Design moderne et professionnel avec gradient, mise en page optimisée et structure élégante',
+      preview: 'flex-preview',
+      colors: ['#3b82f6', '#8b5cf6', '#6366f1'],
+      featured: true
+    },
+    {
+      id: 'proforma1',
+      name: 'Proforma Moderne (Ondulé)',
+      description: 'Design moderne avec en-tête bleu ondulé, icône distinctive et mise en page élégante',
+      preview: 'proforma1-preview',
+      colors: ['#3b82f6', '#2563eb', '#1e40af'],
+      featured: false
+    },
+    {
+      id: 'proforma2',
+      name: 'Proforma Élégant (Grid)',
+      description: 'Design élégant avec logo grid, courbes arrondies et présentation professionnelle',
+      preview: 'proforma2-preview',
+      colors: ['#1e40af', '#3b82f6', '#60a5fa'],
       featured: false
     }
   ];

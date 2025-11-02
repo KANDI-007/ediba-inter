@@ -65,11 +65,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'clients.create', 'clients.edit', 'clients.delete', 'clients.view',
       'suppliers.create', 'suppliers.edit', 'suppliers.delete', 'suppliers.view',
       'discharges.create', 'discharges.edit', 'discharges.delete', 'discharges.view',
+      'payroll.view', 'payroll.create', 'payroll.edit', 'payroll.delete',
       'payments.manage', 'fiscal.manage', 'chat.view', 'chat.send', 'chat.manage'
     ],
     comptable: [
       'reports.view', 'reports.export', 'invoices.view', 'invoices.edit',
       'clients.view', 'suppliers.view', 'discharges.view', 'discharges.edit',
+      'payroll.view', 'payroll.create', 'payroll.edit',
       'payments.manage', 'fiscal.manage', 'chat.view', 'chat.send'
     ],
     commercial: [

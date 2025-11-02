@@ -196,10 +196,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       transports: ['polling', 'websocket'],
       timeout: 10000,
       forceNew: true,
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: maxReconnectAttempts,
-      maxReconnectionAttempts: maxReconnectAttempts
+      reconnection: environment !== 'local' || websocketUrl.includes('production'), // Désactiver la reconnexion automatique en local
+      reconnectionDelay: 3000, // Augmenter le délai pour réduire le spam
+      reconnectionDelayMax: 10000,
+      reconnectionAttempts: environment === 'local' ? 2 : maxReconnectAttempts, // Moins de tentatives en local
+      maxReconnectionAttempts: environment === 'local' ? 2 : maxReconnectAttempts
     });
 
     // Gestion des événements de connexion
@@ -228,9 +229,22 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('❌ Erreur de connexion Socket.IO:', error);
+      // Limiter les logs d'erreur pour éviter le spam en console
+      if (reconnectAttempts.current === 0 || reconnectAttempts.current === maxReconnectAttempts) {
+        if (environment === 'local') {
+          console.warn('⚠️ Serveur WebSocket non disponible (mode local). Le chat ne fonctionnera pas sans le serveur.');
+        } else {
+          console.error('❌ Erreur de connexion Socket.IO:', error.message);
+        }
+      }
       setIsConnected(false);
       setConnectionStatus('error');
+      reconnectAttempts.current += 1;
+      
+      // Désactiver la reconnexion après plusieurs tentatives échouées
+      if (reconnectAttempts.current >= maxReconnectAttempts) {
+        newSocket.io.opts.reconnection = false;
+      }
     });
 
     newSocket.on('reconnect', (attemptNumber) => {

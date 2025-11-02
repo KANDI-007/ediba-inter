@@ -22,17 +22,19 @@ import { useData } from '../../contexts/DataContext';
 
 interface Client {
   id: string;
+  type: 'Societe' | 'ONG' | 'Particulier'; // Type de client
   raisonSociale: string;
   nomCommercial?: string;
-  nif: string;
+  nif: string; // Peut être vide
   rccm?: string;
-  adresse: string;
+  adresse: string; // Adresse complète incluant quartier, BP, etc.
   ville: string;
   telephone: string;
   email: string;
   contactPrincipal: string;
   secteurActivite: string;
-  regimeFiscal: 'Réel Normal' | 'Réel Simplifié' | 'Forfait';
+  regimeFiscal: 'Réel avec TVA' | 'Exonéré de la TVA' | 'Sans TVA' | 'Réel Normal' | 'Réel Simplifié' | 'Forfait'; // Régime fiscal mis à jour
+  classification: 'National' | 'Particulier'; // Classification du client
   delaiPaiement: number; // en jours
   remise: number; // en pourcentage
   limiteCredit: number;
@@ -55,6 +57,7 @@ const ClientsModule: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const [form, setForm] = useState<Partial<Client>>({
+    type: 'Societe',
     raisonSociale: '',
     nomCommercial: '',
     nif: '',
@@ -65,7 +68,8 @@ const ClientsModule: React.FC = () => {
     email: '',
     contactPrincipal: '',
     secteurActivite: '',
-    regimeFiscal: 'Réel Normal',
+    regimeFiscal: 'Réel avec TVA',
+    classification: 'National',
     delaiPaiement: 30,
     remise: 0,
     limiteCredit: 0,
@@ -112,19 +116,36 @@ const ClientsModule: React.FC = () => {
 
   const filteredClients = clientsWithStats.filter(client => {
     const matchesSearch = client.raisonSociale.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.nif.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.email.toLowerCase().includes(searchTerm.toLowerCase());
+                         (client.nif && client.nif.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.telephone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.adresse.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesTab = activeTab === 'all' || 
                       (activeTab === 'actif' && client.statut === 'actif') ||
                       (activeTab === 'inactif' && client.statut === 'inactif') ||
                       (activeTab === 'suspendu' && client.statut === 'suspendu') ||
-                      (activeTab === 'top' && client.totalFacture > 500000);
+                      (activeTab === 'top' && client.totalFacture > 500000) ||
+                      (activeTab === 'societe' && client.type === 'Societe') ||
+                      (activeTab === 'ong' && client.type === 'ONG') ||
+                      (activeTab === 'particulier' && client.type === 'Particulier');
 
     return matchesSearch && matchesTab;
   });
 
   const sortedClients = [...filteredClients].sort((a, b) => {
+    // Si on est sur l'onglet "Tous", trier d'abord par type pour grouper
+    if (activeTab === 'all') {
+      const typeOrder: Record<string, number> = { 'Societe': 1, 'ONG': 2, 'Particulier': 3 };
+      const aTypeOrder = typeOrder[a.type] || 99;
+      const bTypeOrder = typeOrder[b.type] || 99;
+      
+      if (aTypeOrder !== bTypeOrder) {
+        return aTypeOrder - bTypeOrder;
+      }
+    }
+    
+    // Ensuite, trier selon le critère sélectionné
     let aValue: any, bValue: any;
     
     switch (sortBy) {
@@ -319,10 +340,13 @@ const ClientsModule: React.FC = () => {
         </div>
 
         {/* Onglets */}
-        <div className="mt-4 border-b border-gray-200">
+        <div className="mt-4 border-b border-gray-200 overflow-x-auto">
           <nav className="-mb-px flex space-x-8">
             {[
               { id: 'all', name: 'Tous', count: clientsWithStats.length },
+              { id: 'societe', name: 'Sociétés', count: clientsWithStats.filter(c => c.type === 'Societe').length },
+              { id: 'ong', name: 'ONG', count: clientsWithStats.filter(c => c.type === 'ONG').length },
+              { id: 'particulier', name: 'Particuliers', count: clientsWithStats.filter(c => c.type === 'Particulier').length },
               { id: 'actif', name: 'Actifs', count: clientsWithStats.filter(c => c.statut === 'actif').length },
               { id: 'inactif', name: 'Inactifs', count: clientsWithStats.filter(c => c.statut === 'inactif').length },
               { id: 'suspendu', name: 'Suspendus', count: clientsWithStats.filter(c => c.statut === 'suspendu').length },
@@ -356,7 +380,10 @@ const ClientsModule: React.FC = () => {
                   </div>
                   <div className="ml-3">
                     <h3 className="text-lg font-semibold text-gray-900">{client.raisonSociale}</h3>
-                    <p className="text-sm text-gray-500">{client.nif}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">{client.type}</span>
+                      {client.nif && <p className="text-sm text-gray-500">NIF: {client.nif}</p>}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -368,9 +395,13 @@ const ClientsModule: React.FC = () => {
               </div>
 
               <div className="space-y-3 mb-4">
+                <div className="flex items-start text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mr-2 text-gray-400 mt-0.5" />
+                  <span className="truncate">{client.adresse}{client.adresse && client.ville ? ', ' : ''}{client.ville}</span>
+                </div>
                 <div className="flex items-center text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                  <span className="truncate">{client.adresse}, {client.ville}</span>
+                  <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full mr-2">{client.regimeFiscal}</span>
+                  <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">{client.classification}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Phone className="w-4 h-4 mr-2 text-gray-400" />
@@ -469,6 +500,29 @@ const ClientsModule: React.FC = () => {
             <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
+                  <label className="text-sm text-gray-600">Type *</label>
+                  <select 
+                    className="mt-1 w-full border rounded-lg px-3 py-2" 
+                    value={form.type || 'Societe'} 
+                    onChange={(e) => setForm({ ...form, type: e.target.value as any })} 
+                  >
+                    <option value="Societe">Société</option>
+                    <option value="ONG">ONG</option>
+                    <option value="Particulier">Particulier</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Classification *</label>
+                  <select 
+                    className="mt-1 w-full border rounded-lg px-3 py-2" 
+                    value={form.classification || 'National'} 
+                    onChange={(e) => setForm({ ...form, classification: e.target.value as any })} 
+                  >
+                    <option value="National">National</option>
+                    <option value="Particulier">Particulier</option>
+                  </select>
+                </div>
+                <div>
                   <label className="text-sm text-gray-600">Raison sociale *</label>
                   <input 
                     className="mt-1 w-full border rounded-lg px-3 py-2" 
@@ -485,11 +539,12 @@ const ClientsModule: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">NIF</label>
+                  <label className="text-sm text-gray-600">NIF (optionnel)</label>
                   <input 
                     className="mt-1 w-full border rounded-lg px-3 py-2" 
                     value={form.nif || ''} 
                     onChange={(e) => setForm({ ...form, nif: e.target.value })} 
+                    placeholder="Numéro d'Identification Fiscale"
                   />
                 </div>
                 <div>
@@ -501,11 +556,13 @@ const ClientsModule: React.FC = () => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="text-sm text-gray-600">Adresse</label>
-                  <input 
+                  <label className="text-sm text-gray-600">Adresse complète (Quartier, BP, etc.)</label>
+                  <textarea 
                     className="mt-1 w-full border rounded-lg px-3 py-2" 
                     value={form.adresse || ''} 
                     onChange={(e) => setForm({ ...form, adresse: e.target.value })} 
+                    rows={3}
+                    placeholder="Ex: Atchanté Lomé II, Maritime - BP 327 Lomé – Togo"
                   />
                 </div>
                 <div>
@@ -553,12 +610,15 @@ const ClientsModule: React.FC = () => {
                   <label className="text-sm text-gray-600">Régime fiscal</label>
                   <select 
                     className="mt-1 w-full border rounded-lg px-3 py-2" 
-                    value={form.regimeFiscal || 'Réel Normal'} 
+                    value={form.regimeFiscal || 'Réel avec TVA'} 
                     onChange={(e) => setForm({ ...form, regimeFiscal: e.target.value as any })} 
                   >
-                    <option value="Réel Normal">Réel Normal</option>
-                    <option value="Réel Simplifié">Réel Simplifié</option>
-                    <option value="Forfait">Forfait</option>
+                    <option value="Réel avec TVA">Réel avec TVA</option>
+                    <option value="Exonéré de la TVA">Exonéré de la TVA</option>
+                    <option value="Sans TVA">Sans TVA</option>
+                    <option value="Réel Normal">Réel Normal (ancien)</option>
+                    <option value="Réel Simplifié">Réel Simplifié (ancien)</option>
+                    <option value="Forfait">Forfait (ancien)</option>
                   </select>
                 </div>
                 <div>
@@ -606,22 +666,49 @@ const ClientsModule: React.FC = () => {
               <button className="px-4 py-2 rounded-lg border" onClick={() => setShowAddModal(false)}>Annuler</button>
               <button className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700" onClick={() => {
                 if (!form.raisonSociale) {
-                  alert('Veuillez remplir la raison sociale');
+                  alert('❌ Veuillez remplir la raison sociale');
+                  return;
+                }
+                if (!form.type) {
+                  alert('❌ Veuillez sélectionner le type de client');
+                  return;
+                }
+                if (!form.classification) {
+                  alert('❌ Veuillez sélectionner la classification');
                   return;
                 }
                 try {
                   if (editingId) {
                     updateClient(editingId, form as Partial<Client>);
-                    alert('Client modifié avec succès');
+                    alert('✅ Client modifié avec succès');
                   } else {
-                    addClient(form as Omit<Client, 'id' | 'dateCreation' | 'totalFacture' | 'totalEncaissement' | 'soldeImpaye' | 'nombreFactures'>);
-                    alert('Client enregistré avec succès');
+                    const savedClient = addClient(form as Omit<Client, 'id' | 'dateCreation' | 'totalFacture' | 'totalEncaissement' | 'soldeImpaye' | 'nombreFactures'>);
+                    alert(`✅ Client enregistré avec succès !\n\nNom: ${savedClient.raisonSociale}\nType: ${savedClient.type}\nClassification: ${savedClient.classification}\nID: ${savedClient.id}`);
                   }
                   setShowAddModal(false);
-                  setForm({});
+                  setForm({
+                    type: 'Societe',
+                    raisonSociale: '',
+                    nomCommercial: '',
+                    nif: '',
+                    rccm: '',
+                    adresse: '',
+                    ville: 'Lomé',
+                    telephone: '',
+                    email: '',
+                    contactPrincipal: '',
+                    secteurActivite: '',
+                    regimeFiscal: 'Réel avec TVA',
+                    classification: 'National',
+                    delaiPaiement: 30,
+                    remise: 0,
+                    limiteCredit: 0,
+                    statut: 'actif'
+                  });
                   setEditingId(null);
-                } catch (error) {
-                  alert('Erreur lors de l\'enregistrement du client');
+                } catch (error: any) {
+                  console.error('Erreur lors de l\'enregistrement du client:', error);
+                  alert(`❌ Erreur lors de l'enregistrement: ${error?.message || error || 'Erreur inconnue'}`);
                 }
               }}>Enregistrer</button>
             </div>

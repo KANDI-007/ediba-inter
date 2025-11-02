@@ -187,22 +187,27 @@ const ReportsModule: React.FC = () => {
         const periodeDeclaration = editingStates[`${d.id}_periode`] || 'Déclaré pour : le mois';
         const objet = editingStates[`${d.id}_objet`] || d.items.map(i => i.description).join(', ');
         
+        // Trouver le NIF du client
+        const clientData = clients.find(c => c.raisonSociale === d.client);
+        const nif = clientData?.nif || '';
+        
         return { 
           numero: d.id, 
-          nom: d.client, 
+          nom: d.client,
+          nif,
           objet,
           montantHT, 
           tva, 
           montantTTC, 
-          etatPaiement,
           etatExecution,
+          etatPaiement,
           etatArchive,
           etatOtr,
-          periodeDeclaration,
-          date: d.date
+          date: d.date,
+          periodeDeclaration
         };
       });
-  }, [documents, selectedPeriod, editingStates]);
+  }, [documents, selectedPeriod, editingStates, clients]);
 
   const journalFournisseur = useMemo((): SupplierInvoiceData[] => {
     const year = selectedPeriod;
@@ -376,9 +381,9 @@ const ReportsModule: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              const header = ['N° Fac', 'Nom', 'Objet', 'Montant HT', 'TVA', 'Montant TTC', 'Etat Paiement', 'Etat Execution', 'Etat Archive', 'Etat OTR', 'Date', 'Periode Declaration'];
-              const rows = journalClient.map(r => [r.numero, r.nom, r.objet, r.montantHT, r.tva, r.montantTTC, r.etatPaiement, r.etatExecution, r.etatArchive, r.etatOtr, r.date, r.periodeDeclaration]);
-              const totals = ['TOTAL','','', journalClient.reduce((s,r)=>s+r.montantHT,0), journalClient.reduce((s,r)=>s+r.tva,0), journalClient.reduce((s,r)=>s+r.montantTTC,0), '','','','','',''];
+              const header = ['N° Fac', 'Nom', 'NIF', 'Objet', 'Montant HT', 'TVA', 'Montant TTC', 'Etat Execution', 'Etat Paiement', 'Etat Archive', 'Etat OTR', 'Date', 'Periode Declaration'];
+              const rows = journalClient.map(r => [r.numero, r.nom, r.nif || '', r.objet, r.montantHT, r.tva, r.montantTTC, r.etatExecution, r.etatPaiement, r.etatArchive, r.etatOtr, r.date, r.periodeDeclaration]);
+              const totals = ['TOTAL','','','', journalClient.reduce((s,r)=>s+r.montantHT,0), journalClient.reduce((s,r)=>s+r.tva,0), journalClient.reduce((s,r)=>s+r.montantTTC,0), '','','','','',''];
               const csv = [header, ...rows, totals].map(arr => arr.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
               const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' });
               const url = URL.createObjectURL(blob);
@@ -410,12 +415,13 @@ const ReportsModule: React.FC = () => {
             <tr>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">N° Fac</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Nom</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">NIF</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80 min-w-80">Objet</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Montant HT</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">TVA</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Montant TTC</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Etat Paiement</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Etat Execution</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Etat Paiement</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Etat Archive</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Etat OTR</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Date</th>
@@ -427,6 +433,7 @@ const ReportsModule: React.FC = () => {
               <tr key={index} className="hover:bg-gray-50">
                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-24">{facture.numero}</td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 w-32">{facture.nom}</td>
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 w-20">{facture.nif || '-'}</td>
                 <td className="px-3 py-4 text-sm text-gray-900 w-80 min-w-80">
                   <input 
                     type="text"
@@ -440,20 +447,20 @@ const ReportsModule: React.FC = () => {
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 w-24">{facture.montantHT.toLocaleString('fr-FR')} FCFA</td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 w-20">{facture.tva.toLocaleString('fr-FR')} FCFA</td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-24">{facture.montantTTC.toLocaleString('fr-FR')} FCFA</td>
+                <td className="px-3 py-4 whitespace-nowrap w-24">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    facture.etatExecution === 'PLEIN' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {facture.etatExecution}
+                  </span>
+                </td>
                 <td className="px-3 py-4 whitespace-nowrap w-28">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    facture.etatPaiement === 'Payée' ? 'bg-green-100 text-green-800' :
-                    facture.etatPaiement === 'Partiellement payée' ? 'bg-yellow-100 text-yellow-800' :
+                    facture.etatPaiement === 'Payé' ? 'bg-green-100 text-green-800' :
+                    facture.etatPaiement === 'Partiellement payé' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-red-100 text-red-800'
                   }`}>
                     {facture.etatPaiement}
-                  </span>
-                </td>
-                <td className="px-3 py-4 whitespace-nowrap w-24">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    facture.etatExecution === 'Exécutée' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {facture.etatExecution}
                   </span>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap w-24">
@@ -668,16 +675,18 @@ const ReportsModule: React.FC = () => {
 
               // Summary block
               let y = margin + 48;
-              const totalTTC = journalClient.reduce((s, r) => s + r.montantTTC, 0);
-              const totalHT = journalClient.reduce((s, r) => s + r.montantHT, 0);
-              const totalTVA = journalClient.reduce((s, r) => s + r.tva, 0);
+              // Filtrer les factures déclarées OTR pour les totaux et les lignes
+              const otrInvoices = journalClient.filter(r => (editingStates[`${r.numero}_otr`] || r.etatOtr || 'DECLARE') === 'DECLARE');
+              const totalTTC = otrInvoices.reduce((s, r) => s + r.montantTTC, 0);
+              const totalHT = otrInvoices.reduce((s, r) => s + r.montantHT, 0);
+              const totalTVA = otrInvoices.reduce((s, r) => s + r.tva, 0);
               pdf.text(`Total HT: ${totalHT.toLocaleString('fr-FR')}`, margin, y); y += 16;
               pdf.text(`TVA Collectée: ${totalTVA.toLocaleString('fr-FR')}`, margin, y); y += 16;
               pdf.text(`Total TTC: ${totalTTC.toLocaleString('fr-FR')}`, margin, y); y += 24;
 
               // Table header
-              const cols = ['Numero','Date','Client','HT','TVA','TTC','Statut'];
-              const colWidths = [110, 70, 170, 70, 60, 70, 70];
+              const cols = ['Numero','Date','Client','HT','TVA','TTC','Etat OTR'];
+              const colWidths = [110, 70, 170, 70, 60, 70, 80];
               let x = margin;
               pdf.setFontSize(10);
               pdf.setFillColor(235, 245, 255);
@@ -694,7 +703,7 @@ const ReportsModule: React.FC = () => {
               const rowHeight = 16;
               const maxRowsPerPage = Math.floor((pageHeight - y - 60) / rowHeight);
               let rowCountOnPage = 0;
-              const rows = journalClient.map(r => [r.numero, r.date, r.nom, r.montantHT, r.tva, r.montantTTC, r.etatPaiement]);
+              const rows = otrInvoices.map(r => [r.numero, r.date, r.nom, r.montantHT, r.tva, r.montantTTC, (editingStates[`${r.numero}_otr`] || r.etatOtr || 'DECLARE')]);
               for (let idx = 0; idx < rows.length; idx++) {
                 const row = rows[idx];
                 if (rowCountOnPage >= maxRowsPerPage) {
@@ -760,7 +769,7 @@ const ReportsModule: React.FC = () => {
               <TrendingUp className="w-8 h-8 text-blue-600" />
               <div className="ml-3">
                 <p className="text-sm text-blue-600">Chiffre d'Affaires TTC</p>
-                <p className="text-2xl font-bold text-blue-900">{journalClient.reduce((s, r) => s + r.ttc, 0).toLocaleString('fr-FR')} FCFA</p>
+                <p className="text-2xl font-bold text-blue-900">{journalClient.reduce((s, r) => s + r.montantTTC, 0).toLocaleString('fr-FR')} FCFA</p>
               </div>
             </div>
           </div>
@@ -813,6 +822,95 @@ const ReportsModule: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">18%</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Tableau des factures OTR déclarées */}
+        <div className="mt-6 bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h4 className="text-lg font-semibold text-gray-900">Factures Déclarées OTR</h4>
+            <p className="text-sm text-gray-600 mt-1">Liste des factures avec état OTR "DECLARE" pour l'année {selectedPeriod}</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Facture</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIF</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Montant HT</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TVA</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Montant TTC</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Etat OTR</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Période Déclaration</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {(() => {
+                  const otrInvoices = journalClient.filter(r => {
+                    const etatOtr = editingStates[`${r.numero}_otr`] || r.etatOtr || 'DECLARE';
+                    return etatOtr === 'DECLARE';
+                  });
+                  
+                  if (otrInvoices.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                          <AlertCircle className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                          <p>Aucune facture déclarée OTR pour l'année {selectedPeriod}</p>
+                          <p className="text-sm mt-2">Veuillez définir l'état OTR des factures dans le journal facture client</p>
+                        </td>
+                      </tr>
+                    );
+                  }
+                  
+                  return otrInvoices.map((facture, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{facture.numero}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{facture.date}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{facture.nom}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{facture.nif || '-'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">{facture.montantHT.toLocaleString('fr-FR')} FCFA</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">{facture.tva.toLocaleString('fr-FR')} FCFA</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">{facture.montantTTC.toLocaleString('fr-FR')} FCFA</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          {editingStates[`${facture.numero}_otr`] || facture.etatOtr || 'DECLARE'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{facture.periodeDeclaration || '-'}</td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+              {(() => {
+                const otrInvoices = journalClient.filter(r => {
+                  const etatOtr = editingStates[`${r.numero}_otr`] || r.etatOtr || 'DECLARE';
+                  return etatOtr === 'DECLARE';
+                });
+                if (otrInvoices.length > 0) {
+                  return (
+                    <tfoot className="bg-gray-50">
+                      <tr>
+                        <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">TOTAL</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                          {otrInvoices.reduce((s, r) => s + r.montantHT, 0).toLocaleString('fr-FR')} FCFA
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                          {otrInvoices.reduce((s, r) => s + r.tva, 0).toLocaleString('fr-FR')} FCFA
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                          {otrInvoices.reduce((s, r) => s + r.montantTTC, 0).toLocaleString('fr-FR')} FCFA
+                        </td>
+                        <td colSpan={2}></td>
+                      </tr>
+                    </tfoot>
+                  );
+                }
+                return null;
+              })()}
+            </table>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Plus,
   Search,
@@ -18,8 +18,12 @@ import {
   ChevronRight,
   Building2,
   Percent,
-  Receipt
+  Receipt,
+  CreditCard,
+  Banknote
 } from 'lucide-react';
+import LogoIcon from '../LogoIcon';
+import '../../styles/print.css';
 
 interface PayrollEntry {
   id: string;
@@ -60,6 +64,7 @@ interface PayrollEntry {
 const PayrollModule: React.FC = () => {
   const [payrolls, setPayrolls] = useState<PayrollEntry[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPayroll, setSelectedPayroll] = useState<PayrollEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('');
@@ -205,17 +210,21 @@ const PayrollModule: React.FC = () => {
 
   const handleView = (payroll: PayrollEntry) => {
     setSelectedPayroll(payroll);
-    // Ouvrir modal de vue détaillée
+    setShowViewModal(true);
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce bulletin ?')) {
       setPayrolls(payrolls.filter(p => p.id !== id));
+      calculateStatistics(payrolls.filter(p => p.id !== id));
     }
   };
 
   const handlePrint = (payroll: PayrollEntry) => {
-    window.print();
+    // Afficher la modal de vue d'abord
+    setSelectedPayroll(payroll);
+    setShowViewModal(true);
+    // L'impression sera déclenchée depuis la modal
   };
 
   return (
@@ -307,6 +316,9 @@ const PayrollModule: React.FC = () => {
               <option value="2025-01">Janvier 2025</option>
               <option value="2025-02">Février 2025</option>
               <option value="2025-03">Mars 2025</option>
+              <option value="2025-04">Avril 2025</option>
+              <option value="2025-05">Mai 2025</option>
+              <option value="2025-06">Juin 2025</option>
             </select>
 
             <select
@@ -403,21 +415,754 @@ const PayrollModule: React.FC = () => {
       {showModal && (
         <PayrollFormModal
           payroll={selectedPayroll}
-          onClose={() => setShowModal(false)}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedPayroll(null);
+          }}
           onSave={(payroll) => {
             if (selectedPayroll) {
-              setPayrolls(payrolls.map(p => p.id === selectedPayroll.id ? payroll : p));
+              const updated = payrolls.map(p => p.id === selectedPayroll.id ? { ...payroll, updatedAt: new Date().toISOString() } : p);
+              setPayrolls(updated);
+              calculateStatistics(updated);
             } else {
-              setPayrolls([...payrolls, { ...payroll, id: Date.now().toString() }]);
+              const newPayrolls = [...payrolls, { ...payroll, id: Date.now().toString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), createdBy: 'Admin' }];
+              setPayrolls(newPayrolls);
+              calculateStatistics(newPayrolls);
             }
             setShowModal(false);
+            setSelectedPayroll(null);
           }}
+        />
+      )}
+
+      {/* Modal de vue détaillée avec impression */}
+      {showViewModal && selectedPayroll && (
+        <PayrollViewModal
+          payroll={selectedPayroll}
+          onClose={() => {
+            setShowViewModal(false);
+            setSelectedPayroll(null);
+          }}
+          onPrint={() => handlePrint(selectedPayroll)}
         />
       )}
     </div>
   );
 };
 
+// Composant pour afficher et imprimer le bulletin
+interface PayrollViewModalProps {
+  payroll: PayrollEntry;
+  onClose: () => void;
+  onPrint: () => void;
+}
+
+const PayrollViewModal: React.FC<PayrollViewModalProps> = ({ payroll, onClose }) => {
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount) + ' FCFA';
+  };
+
+  const calculateTotalAllowances = () => {
+    return (payroll.allowances.transport || 0) +
+           (payroll.allowances.health || 0) +
+           (payroll.allowances.bonus || 0) +
+           (payroll.allowances.overtime || 0) +
+           (payroll.allowances.other || 0);
+  };
+
+  const calculateTotalDeductions = () => {
+    return (payroll.deductions.socialSecurity || 0) +
+           (payroll.deductions.healthInsurance || 0) +
+           (payroll.deductions.retirement || 0) +
+           (payroll.deductions.tax || 0) +
+           (payroll.deductions.advance || 0) +
+           (payroll.deductions.other || 0);
+  };
+
+  const handlePrint = () => {
+    // Calculer les totaux
+    const totalAllowances = calculateTotalAllowances();
+    const totalDeductions = calculateTotalDeductions();
+    
+    // Créer une nouvelle fenêtre pour l'impression
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Veuillez autoriser les pop-ups pour imprimer le bulletin');
+      return;
+    }
+
+    // Créer le contenu HTML complet du bulletin
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Bulletin de Paie - ${payroll.employeeName}</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            @page {
+              size: A4;
+              margin: 10mm;
+            }
+            
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 12pt;
+              line-height: 1.4;
+              color: #000;
+              background: #fff;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            
+            .print-container {
+              width: 100%;
+              max-width: 210mm;
+              margin: 0 auto;
+              padding: 8mm;
+              box-sizing: border-box;
+              min-height: 297mm;
+              display: flex;
+              flex-direction: column;
+            }
+            
+            .print-header {
+              page-break-after: avoid;
+              break-after: avoid;
+              margin-bottom: 20pt;
+              flex-shrink: 0;
+            }
+            
+            .print-footer {
+              page-break-before: avoid;
+              break-before: avoid;
+              margin-top: auto;
+              flex-shrink: 0;
+            }
+            
+            .print-no-break {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            
+            .print-table {
+              page-break-inside: avoid;
+              break-inside: avoid;
+              width: 100%;
+              border-collapse: collapse;
+            }
+            
+            .print-table tr {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            
+            .print-table td,
+            .print-table th {
+              page-break-inside: avoid;
+              break-inside: avoid;
+              padding: 8pt;
+              border: 1pt solid #000;
+            }
+            
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 10pt 0;
+            }
+            
+            th, td {
+              border: 1pt solid #000;
+              padding: 6pt;
+              text-align: left;
+              vertical-align: top;
+            }
+            
+            th {
+              background-color: #f0f0f0 !important;
+              font-weight: bold;
+            }
+            
+            .bg-green-50 {
+              background-color: #f0fdf4 !important;
+            }
+            
+            .bg-red-50 {
+              background-color: #fef2f2 !important;
+            }
+            
+            .bg-blue-50 {
+              background-color: #eff6ff !important;
+            }
+            
+            .bg-gray-50 {
+              background-color: #f9fafb !important;
+            }
+            
+            .bg-gray-100 {
+              background-color: #f3f4f6 !important;
+            }
+            
+            .bg-yellow-50 {
+              background-color: #fefce8 !important;
+            }
+            
+            h1, h2, h3 {
+              margin: 0.5em 0;
+            }
+            
+            h1 {
+              font-size: 1.5rem;
+              font-weight: 700;
+            }
+            
+            h2 {
+              font-size: 1.25rem;
+              font-weight: 600;
+            }
+            
+            h3 {
+              font-size: 1.125rem;
+              font-weight: 600;
+            }
+            
+            p {
+              margin: 0.25em 0;
+            }
+            
+            /* Styles pour le logo fallback */
+            .logo-placeholder {
+              width: 80px;
+              height: 80px;
+              background: linear-gradient(135deg, #2563eb, #10b981);
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-weight: bold;
+              font-size: 2rem;
+              margin-right: 1rem;
+            }
+            
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              
+              .no-print {
+                display: none !important;
+              }
+              
+              button, .btn, .button {
+                display: none !important;
+              }
+              
+              /* Masquer les éléments avec print-hidden */
+              .print-hidden,
+              *[class*="print-hidden"] {
+                display: none !important;
+              }
+              
+              /* Afficher le logo placeholder pour impression */
+              .logo-placeholder,
+              *[class*="logo-placeholder"] {
+                display: flex !important;
+              }
+              
+              .hidden-print {
+                display: none !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            <!-- En-tête avec logo -->
+            <div class="print-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+              <div style="display: flex; align-items: center;">
+                <div class="logo-placeholder" style="width: 80px; height: 80px; background: linear-gradient(135deg, #2563eb, #10b981); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 2rem; margin-right: 1rem;">
+                  <span>E</span>
+                </div>
+                <div>
+                  <h1 style="font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0; color: #1f2937;">EDIBA INTER SARL U</h1>
+                  <p style="color: #4b5563; margin: 0.25rem 0;">Prestation de services informatiques</p>
+                  <p style="font-size: 0.875rem; color: #6b7280; margin: 0.25rem 0;">Totsi, Rue 331 AGP - Lomé, Togo</p>
+                  <p style="font-size: 0.875rem; color: #6b7280; margin: 0.25rem 0;">+228 92 60 05 42 / 93 39 18 70</p>
+                  <p style="font-size: 0.875rem; color: #6b7280; margin: 0.25rem 0;">NIF: 1001694526 | CNSS: 124509</p>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.875rem; font-weight: 700; color: #2563eb; margin-bottom: 0.5rem;">BULLETIN DE PAIE</div>
+                <div style="font-size: 1.125rem; font-weight: 600; color: #374151;">N° ${payroll.employeeId}-${payroll.period}</div>
+                <div style="color: #4b5563; margin-top: 0.5rem;">Période: ${new Date(payroll.period + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+              </div>
+            </div>
+
+            <!-- Informations employé -->
+            <div style="margin-bottom: 2rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; page-break-inside: avoid;">
+              <h3 style="font-weight: 700; color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem; border-bottom: 2px solid #2563eb; padding-bottom: 0.5rem;">INFORMATIONS EMPLOYÉ</h3>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Nom et Prénom</p>
+                  <p style="font-weight: 600; color: #111827; font-size: 1.125rem; margin: 0.25rem 0;">${payroll.employeeName}</p>
+                </div>
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">ID Employé</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${payroll.employeeId}</p>
+                </div>
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Département</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${payroll.employeeDepartment}</p>
+                </div>
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Poste</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${payroll.employeePosition}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tableau de détail -->
+            <div style="margin-bottom: 2rem; page-break-inside: avoid;">
+              <table class="print-table" style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+                <thead>
+                  <tr style="background-color: #f3f4f6;">
+                    <th style="border: 1px solid #000; padding: 0.75rem; text-align: left; font-weight: 600;">Description</th>
+                    <th style="border: 1px solid #000; padding: 0.75rem; text-align: right; font-weight: 600;">Montant (FCFA)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.75rem; font-weight: 600;">Salaire de Base</td>
+                    <td style="border: 1px solid #000; padding: 0.75rem; text-align: right; font-weight: 600;">${formatCurrency(payroll.grossSalary)}</td>
+                  </tr>
+                  
+                  <!-- Primes -->
+                  <tr style="background-color: #f0fdf4;">
+                    <td colspan="2" style="border: 1px solid #000; padding: 0.5rem; font-weight: 700; color: #14532d;">PRIMES ET INDEMNITÉS</td>
+                  </tr>
+                  ${payroll.allowances.transport ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Indemnité Transport</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.allowances.transport)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.allowances.health ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Indemnité Santé</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.allowances.health)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.allowances.bonus ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Prime</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.allowances.bonus)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.allowances.overtime ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Heures Supplémentaires</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.allowances.overtime)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.allowances.other ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Autres Primes</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.allowances.other)}</td>
+                  </tr>
+                  ` : ''}
+                  <tr style="background-color: #f0fdf4;">
+                    <td style="border: 1px solid #000; padding: 0.5rem; font-weight: 600;">Total Primes</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right; font-weight: 600;">${formatCurrency(totalAllowances)}</td>
+                  </tr>
+
+                  <!-- Déductions -->
+                  <tr style="background-color: #fef2f2;">
+                    <td colspan="2" style="border: 1px solid #000; padding: 0.5rem; font-weight: 700; color: #7f1d1d;">DÉDUCTIONS</td>
+                  </tr>
+                  ${payroll.deductions.socialSecurity ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Sécurité Sociale</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.deductions.socialSecurity)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.deductions.healthInsurance ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Assurance Santé</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.deductions.healthInsurance)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.deductions.retirement ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Retraite</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.deductions.retirement)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.deductions.tax ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Impôt sur le Revenu</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.deductions.tax)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.deductions.advance ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Avance sur Salaire</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.deductions.advance)}</td>
+                  </tr>
+                  ` : ''}
+                  ${payroll.deductions.other ? `
+                  <tr>
+                    <td style="border: 1px solid #000; padding: 0.5rem; padding-left: 2rem;">Autres Déductions</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right;">${formatCurrency(payroll.deductions.other)}</td>
+                  </tr>
+                  ` : ''}
+                  <tr style="background-color: #fef2f2;">
+                    <td style="border: 1px solid #000; padding: 0.5rem; font-weight: 600;">Total Déductions</td>
+                    <td style="border: 1px solid #000; padding: 0.5rem; text-align: right; font-weight: 600;">${formatCurrency(totalDeductions)}</td>
+                  </tr>
+
+                  <!-- Total net -->
+                  <tr style="background-color: #eff6ff;">
+                    <td style="border: 1px solid #000; padding: 0.75rem; font-weight: 700; font-size: 1.125rem;">NET À PAYER</td>
+                    <td style="border: 1px solid #000; padding: 0.75rem; text-align: right; font-weight: 700; font-size: 1.125rem; color: #2563eb;">${formatCurrency(payroll.netSalary)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Informations de paiement -->
+            <div style="margin-bottom: 2rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; page-break-inside: avoid;">
+              <h3 style="font-weight: 700; color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem; border-bottom: 2px solid #2563eb; padding-bottom: 0.5rem;">INFORMATIONS DE PAIEMENT</h3>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Date de Paiement</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${formatDate(payroll.paymentDate)}</p>
+                </div>
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Méthode de Paiement</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${payroll.paymentMethod}</p>
+                </div>
+                ${payroll.bankName ? `
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Banque</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${payroll.bankName}</p>
+                </div>
+                ` : ''}
+                ${payroll.bankAccount ? `
+                <div>
+                  <p style="font-size: 0.875rem; color: #4b5563; margin: 0.25rem 0;">Compte Bancaire</p>
+                  <p style="font-weight: 600; color: #111827; margin: 0.25rem 0;">${payroll.bankAccount}</p>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+
+            ${payroll.notes ? `
+            <!-- Notes -->
+            <div style="margin-bottom: 2rem; padding: 1rem; background-color: #fefce8; border-radius: 0.5rem; page-break-inside: avoid;">
+              <h3 style="font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Notes</h3>
+              <p style="color: #374151; margin: 0.25rem 0;">${payroll.notes}</p>
+            </div>
+            ` : ''}
+
+            <!-- Signature -->
+            <div class="print-footer" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 3rem; page-break-before: avoid;">
+              <div style="text-align: center;">
+                <p style="color: #4b5563; margin-bottom: 2rem;">Signature Employé</p>
+                <div style="width: 8rem; height: 4rem; border-bottom: 2px solid #9ca3af;"></div>
+              </div>
+              <div style="text-align: center;">
+                <p style="color: #4b5563; margin-bottom: 2rem;">Signature EDIBA INTER</p>
+                <div style="width: 8rem; height: 4rem; border-bottom: 2px solid #9ca3af;"></div>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Écrire le contenu dans la nouvelle fenêtre
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Attendre que le contenu soit chargé puis imprimer
+    setTimeout(() => {
+      printWindow.print();
+      // Fermer la fenêtre après impression
+      printWindow.onafterprint = () => {
+        printWindow.close();
+      };
+    }, 250);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 no-print" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto no-print" onClick={(e) => e.stopPropagation()}>
+        {/* Boutons d'action (masqués à l'impression) */}
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex items-center justify-between no-print">
+          <h2 className="text-2xl font-bold">Bulletin de Paie</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrint}
+              className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+            >
+              <Printer className="w-5 h-5" />
+              Imprimer
+            </button>
+            <button
+              onClick={onClose}
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-900 transition-colors flex items-center gap-2"
+            >
+              <X className="w-5 h-5" />
+              Fermer
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu du bulletin - SEULEMENT CE CONTENU SERA IMPRIMÉ */}
+        <div ref={printRef} className="bg-white p-8 print-container" style={{ fontFamily: 'Arial, sans-serif' }}>
+        {/* En-tête avec logo */}
+        <div className="mb-8 print-header flex justify-between items-start">
+          <div className="flex items-center">
+            <div className="w-20 h-20 mr-4 flex-shrink-0 flex items-center justify-center">
+              {/* Logo visible sur écran */}
+              <div className="print-hidden">
+                <LogoIcon size={80} variant="default" />
+              </div>
+              {/* Logo pour impression */}
+              <div className="logo-placeholder hidden-print" style={{ 
+                width: '80px', 
+                height: '80px', 
+                background: 'linear-gradient(135deg, #2563eb, #10b981)',
+                borderRadius: '8px',
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '2rem',
+                marginRight: '1rem'
+              }}>
+                <span>E</span>
+              </div>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">EDIBA INTER SARL U</h1>
+              <p className="text-gray-600">Prestation de services informatiques</p>
+              <p className="text-sm text-gray-500">Totsi, Rue 331 AGP - Lomé, Togo</p>
+              <p className="text-sm text-gray-500">+228 92 60 05 42 / 93 39 18 70</p>
+              <p className="text-sm text-gray-500">NIF: 1001694526 | CNSS: 124509</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-blue-600 mb-2">BULLETIN DE PAIE</div>
+            <div className="text-lg font-semibold text-gray-700">N° {payroll.employeeId}-{payroll.period}</div>
+            <div className="text-gray-600 mt-2">Période: {new Date(payroll.period + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+          </div>
+        </div>
+
+        {/* Informations employé */}
+        <div className="mb-8 p-4 bg-gray-50 rounded-lg print-no-break">
+          <h3 className="font-bold text-gray-800 mb-4 text-lg border-b-2 border-blue-600 pb-2">INFORMATIONS EMPLOYÉ</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Nom et Prénom</p>
+              <p className="font-semibold text-gray-900 text-lg">{payroll.employeeName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">ID Employé</p>
+              <p className="font-semibold text-gray-900">{payroll.employeeId}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Département</p>
+              <p className="font-semibold text-gray-900">{payroll.employeeDepartment}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Poste</p>
+              <p className="font-semibold text-gray-900">{payroll.employeePosition}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tableau de détail */}
+        <div className="mb-8 print-no-break">
+          <table className="w-full border-collapse border border-gray-300 print-table">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Description</th>
+                <th className="border border-gray-300 px-4 py-3 text-right font-semibold">Montant (FCFA)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border border-gray-300 px-4 py-3 font-semibold">Salaire de Base</td>
+                <td className="border border-gray-300 px-4 py-3 text-right font-semibold">{formatCurrency(payroll.grossSalary)}</td>
+              </tr>
+              
+              {/* Primes */}
+              <tr className="bg-green-50">
+                <td colSpan={2} className="border border-gray-300 px-4 py-2 font-bold text-green-900">PRIMES ET INDEMNITÉS</td>
+              </tr>
+              {payroll.allowances.transport && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Indemnité Transport</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.allowances.transport)}</td>
+                </tr>
+              )}
+              {payroll.allowances.health && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Indemnité Santé</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.allowances.health)}</td>
+                </tr>
+              )}
+              {payroll.allowances.bonus && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Prime</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.allowances.bonus)}</td>
+                </tr>
+              )}
+              {payroll.allowances.overtime && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Heures Supplémentaires</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.allowances.overtime)}</td>
+                </tr>
+              )}
+              {payroll.allowances.other && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Autres Primes</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.allowances.other)}</td>
+                </tr>
+              )}
+              <tr className="bg-green-50">
+                <td className="border border-gray-300 px-4 py-2 font-semibold">Total Primes</td>
+                <td className="border border-gray-300 px-4 py-2 text-right font-semibold">{formatCurrency(calculateTotalAllowances())}</td>
+              </tr>
+
+              {/* Déductions */}
+              <tr className="bg-red-50">
+                <td colSpan={2} className="border border-gray-300 px-4 py-2 font-bold text-red-900">DÉDUCTIONS</td>
+              </tr>
+              {payroll.deductions.socialSecurity && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Sécurité Sociale</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.deductions.socialSecurity)}</td>
+                </tr>
+              )}
+              {payroll.deductions.healthInsurance && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Assurance Santé</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.deductions.healthInsurance)}</td>
+                </tr>
+              )}
+              {payroll.deductions.retirement && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Retraite</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.deductions.retirement)}</td>
+                </tr>
+              )}
+              {payroll.deductions.tax && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Impôt sur le Revenu</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.deductions.tax)}</td>
+                </tr>
+              )}
+              {payroll.deductions.advance && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Avance sur Salaire</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.deductions.advance)}</td>
+                </tr>
+              )}
+              {payroll.deductions.other && (
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 pl-8">Autres Déductions</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(payroll.deductions.other)}</td>
+                </tr>
+              )}
+              <tr className="bg-red-50">
+                <td className="border border-gray-300 px-4 py-2 font-semibold">Total Déductions</td>
+                <td className="border border-gray-300 px-4 py-2 text-right font-semibold">{formatCurrency(calculateTotalDeductions())}</td>
+              </tr>
+
+              {/* Total net */}
+              <tr className="bg-blue-50">
+                <td className="border border-gray-300 px-4 py-3 font-bold text-lg">NET À PAYER</td>
+                <td className="border border-gray-300 px-4 py-3 text-right font-bold text-lg text-blue-600">{formatCurrency(payroll.netSalary)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Informations de paiement */}
+        <div className="mb-8 p-4 bg-gray-50 rounded-lg print-no-break">
+          <h3 className="font-bold text-gray-800 mb-4 text-lg border-b-2 border-blue-600 pb-2">INFORMATIONS DE PAIEMENT</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Date de Paiement</p>
+              <p className="font-semibold text-gray-900">{formatDate(payroll.paymentDate)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Méthode de Paiement</p>
+              <p className="font-semibold text-gray-900">{payroll.paymentMethod}</p>
+            </div>
+            {payroll.bankName && (
+              <div>
+                <p className="text-sm text-gray-600">Banque</p>
+                <p className="font-semibold text-gray-900">{payroll.bankName}</p>
+              </div>
+            )}
+            {payroll.bankAccount && (
+              <div>
+                <p className="text-sm text-gray-600">Compte Bancaire</p>
+                <p className="font-semibold text-gray-900">{payroll.bankAccount}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Notes */}
+        {payroll.notes && (
+          <div className="mb-8 p-4 bg-yellow-50 rounded-lg print-no-break">
+            <h3 className="font-bold text-gray-800 mb-2">Notes</h3>
+            <p className="text-gray-700">{payroll.notes}</p>
+          </div>
+        )}
+
+        {/* Signature */}
+        <div className="flex justify-between items-end mt-12 print-footer">
+          <div className="text-center">
+            <p className="text-gray-600 mb-8">Signature Employé</p>
+            <div className="w-32 h-16 border-b-2 border-gray-400"></div>
+          </div>
+          <div className="text-center">
+            <p className="text-gray-600 mb-8">Signature EDIBA INTER</p>
+            <div className="w-32 h-16 border-b-2 border-gray-400"></div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+};
+
+// Modal de formulaire pour créer/éditer
 interface PayrollFormModalProps {
   payroll: PayrollEntry | null;
   onClose: () => void;
@@ -426,17 +1171,20 @@ interface PayrollFormModalProps {
 
 const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, onSave }) => {
   const [formData, setFormData] = useState<Partial<PayrollEntry>>({
+    employeeId: '',
     employeeName: '',
     employeeDepartment: '',
     employeePosition: '',
     period: '',
     grossSalary: 0,
-    allowances: { transport: 0, health: 0, bonus: 0, overtime: 0 },
-    deductions: { socialSecurity: 0, healthInsurance: 0, retirement: 0, tax: 0 },
+    allowances: { transport: 0, health: 0, bonus: 0, overtime: 0, other: 0 },
+    deductions: { socialSecurity: 0, healthInsurance: 0, retirement: 0, tax: 0, advance: 0, other: 0 },
     netSalary: 0,
     currency: 'FCFA',
     paymentDate: '',
     paymentMethod: 'Virement bancaire',
+    bankName: '',
+    bankAccount: '',
     status: 'draft',
     notes: ''
   });
@@ -446,6 +1194,25 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
       setFormData(payroll);
     }
   }, [payroll]);
+
+  // Calcul automatique du salaire net
+  useEffect(() => {
+    const totalAllowances = (formData.allowances?.transport || 0) +
+                           (formData.allowances?.health || 0) +
+                           (formData.allowances?.bonus || 0) +
+                           (formData.allowances?.overtime || 0) +
+                           (formData.allowances?.other || 0);
+    
+    const totalDeductions = (formData.deductions?.socialSecurity || 0) +
+                           (formData.deductions?.healthInsurance || 0) +
+                           (formData.deductions?.retirement || 0) +
+                           (formData.deductions?.tax || 0) +
+                           (formData.deductions?.advance || 0) +
+                           (formData.deductions?.other || 0);
+    
+    const net = (formData.grossSalary || 0) + totalAllowances - totalDeductions;
+    setFormData(prev => ({ ...prev, netSalary: Math.max(0, net) }));
+  }, [formData.grossSalary, formData.allowances, formData.deductions]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -457,6 +1224,13 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData as PayrollEntry);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount) + ' FCFA';
   };
 
   return (
@@ -478,9 +1252,20 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
               <User className="w-5 h-5" />
               Informations Employé
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ID Employé *</label>
+                <input
+                  type="text"
+                  value={formData.employeeId || ''}
+                  onChange={(e) => handleChange('employeeId', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                  placeholder="EMP001"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom et Prénom *</label>
                 <input
                   type="text"
                   value={formData.employeeName || ''}
@@ -490,7 +1275,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Département</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Département *</label>
                 <input
                   type="text"
                   value={formData.employeeDepartment || ''}
@@ -500,7 +1285,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Poste</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Poste *</label>
                 <input
                   type="text"
                   value={formData.employeePosition || ''}
@@ -515,7 +1300,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
           {/* Période et statut */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Période</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Période *</label>
               <input
                 type="month"
                 value={formData.period || ''}
@@ -525,7 +1310,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Statut *</label>
               <select
                 value={formData.status || 'draft'}
                 onChange={(e) => handleChange('status', e.target.value)}
@@ -538,7 +1323,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date de paiement</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date de paiement *</label>
               <input
                 type="date"
                 value={formData.paymentDate || ''}
@@ -555,17 +1340,18 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
               <DollarSign className="w-5 h-5" />
               Salaire Brut et Primes
             </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Salaire Brut (FCFA) *</label>
+              <input
+                type="number"
+                value={formData.grossSalary || 0}
+                onChange={(e) => handleChange('grossSalary', Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+                min="0"
+              />
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Salaire Brut</label>
-                <input
-                  type="number"
-                  value={formData.grossSalary || 0}
-                  onChange={(e) => handleChange('grossSalary', Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  required
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Transport</label>
                 <input
@@ -573,6 +1359,17 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                   value={formData.allowances?.transport || 0}
                   onChange={(e) => handleChange('allowances', { ...formData.allowances, transport: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Indemnité Santé</label>
+                <input
+                  type="number"
+                  value={formData.allowances?.health || 0}
+                  onChange={(e) => handleChange('allowances', { ...formData.allowances, health: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  min="0"
                 />
               </div>
               <div>
@@ -582,6 +1379,27 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                   value={formData.allowances?.bonus || 0}
                   onChange={(e) => handleChange('allowances', { ...formData.allowances, bonus: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Heures Supplémentaires</label>
+                <input
+                  type="number"
+                  value={formData.allowances?.overtime || 0}
+                  onChange={(e) => handleChange('allowances', { ...formData.allowances, overtime: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autres Primes</label>
+                <input
+                  type="number"
+                  value={formData.allowances?.other || 0}
+                  onChange={(e) => handleChange('allowances', { ...formData.allowances, other: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  min="0"
                 />
               </div>
             </div>
@@ -593,7 +1411,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
               <TrendingUp className="w-5 h-5" />
               Déductions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sécurité Sociale</label>
                 <input
@@ -601,6 +1419,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                   value={formData.deductions?.socialSecurity || 0}
                   onChange={(e) => handleChange('deductions', { ...formData.deductions, socialSecurity: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  min="0"
                 />
               </div>
               <div>
@@ -610,6 +1429,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                   value={formData.deductions?.healthInsurance || 0}
                   onChange={(e) => handleChange('deductions', { ...formData.deductions, healthInsurance: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  min="0"
                 />
               </div>
               <div>
@@ -619,15 +1439,91 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
                   value={formData.deductions?.retirement || 0}
                   onChange={(e) => handleChange('deductions', { ...formData.deductions, retirement: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Impôt</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Impôt sur le Revenu</label>
                 <input
                   type="number"
                   value={formData.deductions?.tax || 0}
                   onChange={(e) => handleChange('deductions', { ...formData.deductions, tax: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Avance sur Salaire</label>
+                <input
+                  type="number"
+                  value={formData.deductions?.advance || 0}
+                  onChange={(e) => handleChange('deductions', { ...formData.deductions, advance: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Autres Déductions</label>
+                <input
+                  type="number"
+                  value={formData.deductions?.other || 0}
+                  onChange={(e) => handleChange('deductions', { ...formData.deductions, other: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  min="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Salaire net (calculé automatiquement) */}
+          <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Salaire Net à Payer</p>
+                <p className="text-3xl font-bold text-blue-600">{formatCurrency(formData.netSalary || 0)}</p>
+              </div>
+              <Banknote className="w-16 h-16 text-blue-600 opacity-30" />
+            </div>
+          </div>
+
+          {/* Informations bancaires */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Informations Bancaires
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Méthode de Paiement *</label>
+                <select
+                  value={formData.paymentMethod || 'Virement bancaire'}
+                  onChange={(e) => handleChange('paymentMethod', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Virement bancaire">Virement bancaire</option>
+                  <option value="Chèque">Chèque</option>
+                  <option value="Espèces">Espèces</option>
+                  <option value="Mobile Money">Mobile Money</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Banque</label>
+                <input
+                  type="text"
+                  value={formData.bankName || ''}
+                  onChange={(e) => handleChange('bankName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Bank of Africa"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Compte Bancaire</label>
+                <input
+                  type="text"
+                  value={formData.bankAccount || ''}
+                  onChange={(e) => handleChange('bankAccount', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="TG01012345678901234567"
                 />
               </div>
             </div>
@@ -641,6 +1537,7 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
               onChange={(e) => handleChange('notes', e.target.value)}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Notes additionnelles..."
             />
           </div>
 
@@ -649,15 +1546,15 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:shadow-lg transition-all"
+              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
             >
-              <Save className="w-5 h-5 inline mr-2" />
+              <Save className="w-5 h-5" />
               Enregistrer
             </button>
           </div>
@@ -668,4 +1565,3 @@ const PayrollFormModal: React.FC<PayrollFormModalProps> = ({ payroll, onClose, o
 };
 
 export default PayrollModule;
-
