@@ -123,6 +123,11 @@
     margin-top: 20pt;
     page-break-before: avoid;
     break-before: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   .invoice-signatures {
